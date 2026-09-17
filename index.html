@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Gramar Hub</title>
+<meta name="theme-color" content="#2F5233" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Gramar%20Hub%22,%22short_name%22:%22Gramar%20Hub%22,%22start_url%22:%22.%22,%22display%22:%22standalone%22,%22theme_color%22:%22%232F5233%22,%22background_color%22:%22%23F1EFE6%22}">
+<style>
+:root{
+  --ink:#16241C;
+  --ink-soft:#3E4E42;
+  --canvas:#F1EFE6;
+  --canvas-raised:#FFFFFF;
+  --line:#DAD6C6;
+  --moss:#2F5233;
+  --moss-dark:#213A26;
+  --moss-tint:#E4EBE1;
+  --clay:#B5651D;
+  --clay-tint:#F3E3D3;
+  --sun:#C98A1E;
+  --sun-tint:#F5E7C8;
+  --sky:#3E6E82;
+  --sky-tint:#DDEAEE;
+  --danger:#A63B33;
+  --danger-tint:#F3DEDB;
+  --radius-sm:6px;
+  --radius:10px;
+  --shadow:0 1px 2px rgba(22,36,28,0.06), 0 4px 14px rgba(22,36,28,0.05);
+  font-family:"IBM Plex Sans", -apple-system, sans-serif;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--canvas);color:var(--ink);}
+body{-webkit-font-smoothing:antialiased;}
+h1,h2,h3{margin:0;font-weight:500;}
+.serif{font-family:"Newsreader", serif; font-style:italic;}
+button{font-family:inherit;cursor:pointer;}
+input,select,textarea{font-family:inherit;font-size:0.92rem;}
+a{color:inherit;}
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px;}
+
+/* ---------- LOGIN ---------- */
+#login-screen{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(160deg, var(--moss-dark) 0%, var(--moss) 55%, #4A6B3E 100%);
+  padding:24px;position:relative;overflow:hidden;
+}
+#login-screen::before, #login-screen::after{
+  content:"";position:absolute;border-radius:50%;background:rgba(255,255,255,0.05);
+}
+#login-screen::before{width:420px;height:420px;top:-140px;right:-120px;}
+#login-screen::after{width:280px;height:280px;bottom:-100px;left:-80px;background:rgba(200,138,30,0.08);}
+.login-card{
+  background:var(--canvas-raised);border-radius:var(--radius);padding:40px 36px;
+  width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,0.25);
+  position:relative;z-index:1;animation:fadeInUp .3s ease;
+}
+.login-card .brand{font-size:1.9rem;margin-bottom:4px;color:var(--moss-dark);}
+.login-card .brand-sub{color:var(--ink-soft);font-size:0.85rem;margin-bottom:28px;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:0.8rem;color:var(--ink-soft);margin-bottom:5px;}
+.field input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius-sm);background:#fff;}
+.field input:focus{outline:2px solid var(--moss);outline-offset:1px;}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:10px 16px;border-radius:var(--radius-sm);border:1px solid transparent;
+  font-size:0.88rem;font-weight:600;transition:transform .06s ease;
+}
+.btn:active{transform:scale(0.98);}
+.btn-primary{background:var(--moss);color:#fff;width:100%;padding:11px;margin-top:6px;}
+.btn-primary:hover{background:var(--moss-dark);}
+.btn-ghost{background:transparent;border-color:var(--line);color:var(--ink);}
+.btn-ghost:hover{background:var(--moss-tint);}
+.btn-danger-outline{background:transparent;border-color:var(--danger);color:var(--danger);}
+.error-msg{color:var(--danger);font-size:0.82rem;margin-top:8px;min-height:1em;}
+
+/* ---------- APP SHELL ---------- */
+#app{display:none;min-height:100vh;}
+.shell{display:flex;min-height:100vh;}
+.sidebar{
+  width:220px;flex:0 0 220px;background:var(--moss-dark);color:#EFEDE2;
+  display:flex;flex-direction:column;padding:20px 14px;position:sticky;top:0;height:100vh;
+}
+.sidebar .brand{font-size:1.4rem;padding:0 8px 20px 8px;color:#fff;}
+.nav-group{margin-bottom:18px;}
+.nav-label{font-size:0.7rem;color:#A9BBA1;padding:0 10px 6px;letter-spacing:0.02em;}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--radius-sm);
+  color:#DCE3D5;font-size:0.88rem;margin-bottom:2px;transition:background .1s;
+}
+.nav-item:hover{background:rgba(255,255,255,0.07);cursor:pointer;}
+.nav-item.active{background:rgba(255,255,255,0.14);color:#fff;font-weight:600;}
+.nav-icon{width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;opacity:0.85;flex:0 0 18px;}
+.nav-icon svg{width:16px;height:16px;}
+.nav-item{transition:background .12s ease, color .12s ease, padding-left .12s ease;}
+.nav-item.active{position:relative;}
+.nav-item.active::before{content:"";position:absolute;left:-14px;top:50%;transform:translateY(-50%);width:3px;height:60%;background:var(--sun);border-radius:0 3px 3px 0;}
+.sidebar-foot{margin-top:auto;padding:10px;border-top:1px solid rgba(255,255,255,0.12);}
+.user-chip{display:flex;align-items:center;gap:8px;font-size:0.82rem;color:#DCE3D5;margin-bottom:8px;}
+.avatar{width:26px;height:26px;border-radius:50%;background:var(--sun);color:#3A2A05;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;flex:0 0 26px;}
+
+.main{flex:1;min-width:0;display:flex;flex-direction:column;}
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;padding:18px 28px;
+  border-bottom:1px solid var(--line);background:var(--canvas-raised);
+}
+.topbar h1{font-size:1.3rem;}
+.topbar .sub{color:var(--ink-soft);font-size:0.85rem;margin-top:2px;}
+.content{padding:24px 28px 60px;flex:1;}
+
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:20px;flex-wrap:wrap;}
+.tab{padding:9px 14px;font-size:0.86rem;color:var(--ink-soft);border-bottom:2px solid transparent;cursor:pointer;}
+.tab:hover{color:var(--ink);}
+.tab.active{color:var(--moss-dark);border-bottom-color:var(--moss);font-weight:600;}
+
+/* Cards / panels */
+.panel{background:var(--canvas-raised);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:18px;}
+.grid-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:20px;}
+.stat{background:var(--canvas-raised);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;transition:transform .15s ease, box-shadow .15s ease;}
+.stat:hover{transform:translateY(-2px);box-shadow:var(--shadow);}
+.stat .num{font-size:1.7rem;font-weight:600;color:var(--moss-dark);}
+.stat .label{font-size:0.8rem;color:var(--ink-soft);margin-top:2px;}
+.content{animation:fadeInUp .22s ease;}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+tbody tr{transition:background .1s ease;}
+.btn{transition:transform .06s ease, background .12s ease, box-shadow .12s ease;}
+.btn-primary{box-shadow:0 1px 2px rgba(47,82,51,0.25);}
+.btn-primary:hover{box-shadow:0 3px 10px rgba(47,82,51,0.3);}
+
+/* Kanban */
+.board{display:flex;gap:16px;overflow-x:auto;padding-bottom:10px;}
+.col{background:#EAE7DA;border-radius:var(--radius);min-width:260px;flex:1 0 260px;padding:12px;max-height:calc(100vh - 260px);display:flex;flex-direction:column;}
+.col-head{display:flex;justify-content:space-between;align-items:center;padding:2px 6px 10px;}
+.col-head .name{font-size:0.85rem;font-weight:600;color:var(--ink-soft);}
+.col-head .count{font-size:0.75rem;background:rgba(0,0,0,0.06);padding:1px 7px;border-radius:10px;}
+.col-body{overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px;min-height:40px;}
+.card-task{
+  background:var(--canvas-raised);border:1px solid var(--line);border-radius:var(--radius-sm);
+  padding:11px 12px;box-shadow:var(--shadow);cursor:grab;transition:transform .12s ease, box-shadow .12s ease;
+}
+.card-task:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(22,36,28,0.12);}
+.card-task.dragging{opacity:0.4;}
+.card-task .t{font-size:0.88rem;font-weight:500;margin-bottom:6px;}
+.card-task .meta{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;}
+.pill{font-size:0.68rem;padding:2px 7px;border-radius:20px;font-weight:600;}
+.pill-baixa{background:var(--sky-tint);color:var(--sky);}
+.pill-media{background:var(--sun-tint);color:var(--sun);}
+.pill-alta{background:var(--clay-tint);color:var(--clay);}
+.pill-urgente{background:var(--danger-tint);color:var(--danger);}
+.due{font-size:0.72rem;color:var(--ink-soft);}
+.due.late{color:var(--danger);font-weight:600;}
+.assignee-dot{width:20px;height:20px;border-radius:50%;background:var(--moss-tint);color:var(--moss-dark);font-size:0.65rem;display:flex;align-items:center;justify-content:center;font-weight:700;}
+.col-add{padding:8px 10px;font-size:0.82rem;color:var(--ink-soft);border:1px dashed var(--line);border-radius:var(--radius-sm);text-align:center;margin-top:6px;}
+.col-add:hover{background:rgba(0,0,0,0.03);}
+
+/* Tables */
+table{width:100%;border-collapse:collapse;font-size:0.87rem;}
+thead th{text-align:left;padding:9px 12px;color:var(--ink-soft);font-weight:600;border-bottom:1px solid var(--line);font-size:0.78rem;white-space:nowrap;}
+tbody td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle;}
+tbody tr:hover{background:rgba(0,0,0,0.02);}
+.status-badge{font-size:0.72rem;padding:3px 9px;border-radius:20px;font-weight:600;display:inline-block;}
+.status-pendente{background:var(--sun-tint);color:var(--sun);}
+.status-aprovado{background:var(--moss-tint);color:var(--moss-dark);}
+.status-rejeitado{background:var(--danger-tint);color:var(--danger);}
+.status-aberto{background:var(--sky-tint);color:var(--sky);}
+.status-fechado{background:var(--moss-tint);color:var(--moss-dark);}
+.status-enviado{background:var(--sun-tint);color:var(--sun);}
+.status-pago{background:var(--moss-tint);color:var(--moss-dark);}
+
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap;}
+.toolbar .filters{display:flex;gap:8px;flex-wrap:wrap;}
+select.select-filter, input.input-filter{padding:7px 10px;border:1px solid var(--line);border-radius:var(--radius-sm);background:#fff;font-size:0.85rem;}
+
+/* Modal */
+.modal-bg{position:fixed;inset:0;background:rgba(22,36,28,0.45);display:none;align-items:center;justify-content:center;z-index:50;padding:20px;}
+.modal-bg.open{display:flex;}
+.modal{background:var(--canvas-raised);border-radius:var(--radius);width:100%;max-width:480px;max-height:88vh;overflow-y:auto;padding:24px;box-shadow:0 24px 60px rgba(0,0,0,0.3);}
+.modal h3{margin-bottom:16px;}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px;}
+textarea{width:100%;resize:vertical;min-height:70px;padding:9px 11px;border:1px solid var(--line);border-radius:var(--radius-sm);}
+
+.empty-state{text-align:center;padding:50px 20px;color:var(--ink-soft);}
+.empty-state .big{font-size:1.05rem;color:var(--ink);margin-bottom:6px;}
+
+.chart-wrap{background:var(--canvas-raised);border:1px solid var(--line);border-radius:var(--radius);padding:18px;}
+.two-col{display:grid;grid-template-columns:1.4fr 1fr;gap:18px;}
+@media (max-width:900px){
+  .two-col{grid-template-columns:1fr;}
+  .sidebar{position:fixed;left:-240px;transition:left .18s ease;z-index:40;}
+  .sidebar.open{left:0;}
+  .menu-toggle{display:inline-flex !important;}
+}
+.menu-toggle{display:none;background:none;border:none;font-size:1.3rem;padding:4px 8px;}
+.toast{position:fixed;bottom:20px;right:20px;background:var(--ink);color:#fff;padding:11px 18px;border-radius:var(--radius-sm);font-size:0.85rem;box-shadow:var(--shadow);z-index:80;opacity:0;transform:translateY(8px);transition:all .2s;}
+.toast.show{opacity:1;transform:translateY(0);}
+</style>
+</head>
+<body>
+
+<!-- ================= LOGIN ================= -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="brand serif">Gramar Hub</div>
+    <div class="brand-sub">Tarefas &amp; Medições em um só lugar</div>
+    <form id="login-form">
+      <div class="field">
+        <label for="login-email">E-mail</label>
+        <input id="login-email" type="email" required autocomplete="email" />
+      </div>
+      <div class="field">
+        <label for="login-pass">Senha</label>
+        <input id="login-pass" type="password" required autocomplete="current-password" />
+      </div>
+      <button type="submit" class="btn btn-primary">Entrar</button>
+      <div class="error-msg" id="login-error"></div>
+    </form>
+  </div>
+</div>
+
+<!-- ================= APP ================= -->
+<div id="app">
+  <div class="shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand serif">Gramar Hub</div>
+
+      <div class="nav-group">
+        <div class="nav-label">GERAL</div>
+        <div class="nav-item" data-view="dashboard"><span class="nav-icon"></span> Dashboard</div>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-label">TAREFAS</div>
+        <div class="nav-item" data-view="tarefas"><span class="nav-icon"></span> Quadro</div>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-label">MEDIÇÕES</div>
+        <div class="nav-item" data-view="presenca"><span class="nav-icon"></span> Presença</div>
+        <div class="nav-item" data-view="insumos"><span class="nav-icon"></span> Insumos</div>
+        <div class="nav-item" data-view="atividades"><span class="nav-icon"></span> Atividades</div>
+        <div class="nav-item" data-view="faturamento"><span class="nav-icon"></span> Faturamento</div>
+        <div class="nav-item" data-view="trabalhadores"><span class="nav-icon"></span> Trabalhadores</div>
+        <div class="nav-item" data-view="obras"><span class="nav-icon"></span> Obras</div>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-label">FINANCEIRO</div>
+        <div class="nav-item" data-view="caixa"><span class="nav-icon"></span> Caixa geral</div>
+        <div class="nav-item" data-view="caixinha_escritorio"><span class="nav-icon"></span> Caixinha escritório</div>
+        <div class="nav-item" data-view="caixinha_campo"><span class="nav-icon"></span> Caixinha de campo</div>
+        <div class="nav-item" data-view="combustivel"><span class="nav-icon"></span> Combustível</div>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-label">SISTEMA</div>
+        <div class="nav-item" data-view="auditoria"><span class="nav-icon"></span> Auditoria</div>
+      </div>
+
+      <div class="sidebar-foot">
+        <div class="user-chip"><div class="avatar" id="user-avatar">?</div>
+          <div><div id="user-name">—</div><div id="user-role" style="font-size:0.72rem;color:#A9BBA1;"></div></div>
+        </div>
+        <button class="btn btn-ghost" id="logout-btn" style="width:100%;">Sair</button>
+      </div>
+    </aside>
+
+    <div class="main">
+      <div class="topbar">
+        <div>
+          <button class="menu-toggle" id="menu-toggle">☰</button>
+          <h1 id="view-title" style="display:inline;">Dashboard</h1>
+          <div class="sub" id="view-sub">Visão geral do que está acontecendo</div>
+        </div>
+        <div id="topbar-actions"></div>
+      </div>
+      <div class="content" id="content"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-bg"><div class="modal" id="modal-body"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   CONFIGURAÇÃO — troque pelas suas credenciais do Supabase
+   ============================================================ */
+const SUPABASE_URL = "https://yiwhciulmovrqcvnvftr.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlpd2hjaXVsbW92cnFjdm52ZnRyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk1Njk0OTIsImV4cCI6MjEwNTE0NTQ5Mn0.l60CAmIbGqgrUcvakRFwlRfLLfi3MkUEHUouX0PDsdo";
+const VAPID_PUBLIC_KEY = "BGRzj5vbScHZLFwz5l8hp9y3nB3As-JFJV6CGGhupWwGitIMzQyBybsFBdnwrCh2PkAVXburEJoeIb_BQPR7-yY";
+supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// (sem "const": a lib do Supabase já declara um `var supabase` global — aqui só substituímos
+// o conteúdo dele pelo client configurado, sem criar um identificador duplicado)
+
+/* ============================================================
+   ÍCONES (SVG inline — consistentes em qualquer dispositivo)
+   ============================================================ */
+const ICONS = {
+  dashboard: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="5" rx="1.5"/><rect x="13" y="10" width="8" height="11" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/></svg>`,
+  tarefas: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/><line x1="15" y1="4" x2="15" y2="20"/></svg>`,
+  presenca: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 12l3 3 5-6"/></svg>`,
+  insumos: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>`,
+  atividades: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 8L9 4l-3 8H2"/></svg>`,
+  faturamento: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>`,
+  trabalhadores: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>`,
+  obras: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V9l7-5 7 5v12"/><path d="M9 21v-6h6v6"/></svg>`,
+  caixa: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2h14a2 2 0 002-2v-1"/><path d="M17 12h4v4h-4a2 2 0 010-4z"/></svg>`,
+  caixinha_escritorio: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><circle cx="15" cy="15" r="6" stroke-dasharray="0"/><path d="M9.5 6.5c-.5 1-.5 3 0 4"/></svg>`,
+  caixinha_campo: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15l2-7a2 2 0 012-1.5h10A2 2 0 0119 8.5L21 15"/><path d="M3 15h18v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3z"/><path d="M9 15V9"/></svg>`,
+  combustivel: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22V6a2 2 0 012-2h6a2 2 0 012 2v16"/><path d="M3 22h10"/><path d="M13 9h2l3 3v6a1.5 1.5 0 01-3 0"/><path d="M6 6v4h4V6"/></svg>`,
+  auditoria: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 5v7h7"/><path d="M12 8v4l3 2"/></svg>`,
+};
+document.querySelectorAll(".nav-item").forEach(el => {
+  const iconEl = el.querySelector(".nav-icon");
+  if (iconEl && ICONS[el.dataset.view]) iconEl.innerHTML = ICONS[el.dataset.view];
+});
+
+/* ============================================================
+   ESTADO GLOBAL
+   ============================================================ */
+let currentUser = null;   // registro da tabela `usuarios`
+let currentView = "dashboard";
+let cache = { usuarios: [], contratos: [], trabalhadores: [], quadroId: null };
+
+const STATUS_TAREFA = [
+  { key: "a_fazer", label: "A fazer" },
+  { key: "em_andamento", label: "Em andamento" },
+  { key: "em_revisao", label: "Em revisão" },
+  { key: "concluida", label: "Concluída" },
+];
+
+/* ---------- PERMISSÕES POR PAPEL ----------
+   views: quais telas aparecem no menu para esse papel
+   readOnly: dentro das telas que aparecem, em quais o papel só consulta
+             (sem botão de novo/editar/excluir) */
+const PERMISSIONS = {
+  admin:  { label: "Administrador",   views: ["dashboard","tarefas","presenca","insumos","atividades","faturamento","trabalhadores","obras","caixa","caixinha_escritorio","caixinha_campo","combustivel","auditoria"], readOnly: [] },
+  gestor: { label: "Gestão",          views: ["dashboard","tarefas","presenca","insumos","atividades","faturamento","trabalhadores","obras","caixa","caixinha_escritorio","caixinha_campo","combustivel","auditoria"], readOnly: ["insumos","atividades","faturamento","caixinha_escritorio","caixinha_campo","combustivel"] },
+  membro: { label: "Administrativo",  views: ["dashboard","tarefas","presenca","insumos","atividades","faturamento","trabalhadores","obras","caixinha_escritorio","combustivel"], readOnly: ["faturamento","trabalhadores","obras"] },
+  campo:  { label: "Campo",           views: ["dashboard","tarefas","presenca","insumos","atividades","caixinha_campo"], readOnly: [] },
+};
+function perms() { return PERMISSIONS[currentUser?.papel] || PERMISSIONS.membro; }
+function canView(view) { return perms().views.includes(view); }
+function canWrite(view) { return canView(view) && !perms().readOnly.includes(view); }
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function toast(msg) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  setTimeout(() => el.classList.remove("show"), 2400);
+}
+function fmtDate(d) {
+  if (!d) return "—";
+  const dt = new Date(d + "T00:00:00");
+  return dt.toLocaleDateString("pt-BR");
+}
+function fmtMoney(v) {
+  if (v == null) return "—";
+  return Number(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+function initials(name) {
+  if (!name) return "?";
+  return name.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase();
+}
+function isLate(dateStr) {
+  if (!dateStr) return false;
+  return new Date(dateStr + "T00:00:00") < new Date(new Date().toDateString());
+}
+async function logAudit(modulo, acao, entidade, entidade_id, detalhes = {}) {
+  try {
+    await supabase.from("audit_log").insert({
+      usuario_id: currentUser?.id, modulo, acao, entidade, entidade_id, detalhes
+    });
+  } catch (e) { console.warn("audit log falhou", e); }
+}
+function openModal(html) {
+  document.getElementById("modal-body").innerHTML = html;
+  document.getElementById("modal-bg").classList.add("open");
+}
+function closeModal() {
+  document.getElementById("modal-bg").classList.remove("open");
+}
+document.getElementById("modal-bg").addEventListener("click", (e) => {
+  if (e.target.id === "modal-bg") closeModal();
+});
+
+/* ============================================================
+   AUTENTICAÇÃO
+   ============================================================ */
+document.getElementById("login-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = document.getElementById("login-email").value.trim();
+  const password = document.getElementById("login-pass").value;
+  const errEl = document.getElementById("login-error");
+  errEl.textContent = "";
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) { errEl.textContent = "E-mail ou senha inválidos."; return; }
+  await afterLogin(data.user);
+});
+
+document.getElementById("logout-btn").addEventListener("click", async () => {
+  await supabase.auth.signOut();
+  location.reload();
+});
+
+async function afterLogin(authUser) {
+  let { data: perfil } = await supabase.from("usuarios").select("*").eq("auth_id", authUser.id).maybeSingle();
+  if (!perfil) {
+    // pode já existir um pré-cadastro pelo e-mail (equipe cadastrada antes do 1º login) — linka nele
+    const { data: preCadastro } = await supabase.from("usuarios").select("*").eq("email", authUser.email).maybeSingle();
+    if (preCadastro) {
+      const { data: linkado } = await supabase.from("usuarios")
+        .update({ auth_id: authUser.id }).eq("id", preCadastro.id).select().single();
+      perfil = linkado;
+    } else {
+      const { data: novoPerfil } = await supabase.from("usuarios")
+        .insert({ auth_id: authUser.id, email: authUser.email, nome: authUser.email.split("@")[0], papel: "membro" })
+        .select().single();
+      perfil = novoPerfil;
+    }
+  }
+  currentUser = perfil;
+  document.getElementById("login-screen").style.display = "none";
+  document.getElementById("app").style.display = "block";
+  document.getElementById("user-name").textContent = currentUser.nome;
+  document.getElementById("user-avatar").textContent = initials(currentUser.nome);
+  document.getElementById("user-role").textContent = perms().label + (currentUser.cargo ? ` · ${currentUser.cargo}` : "");
+  document.querySelectorAll(".nav-item").forEach(el => {
+    el.style.display = canView(el.dataset.view) ? "" : "none";
+  });
+  await loadReferenceData();
+  setView(canView("dashboard") ? "dashboard" : perms().views[0]);
+  setupPushNotifications();
+}
+
+/* ============================================================
+   PUSH NOTIFICATIONS — alerta no celular ao ser atribuído a uma tarefa
+   ============================================================ */
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = atob(base64);
+  return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
+}
+
+async function setupPushNotifications() {
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
+  if (VAPID_PUBLIC_KEY.startsWith("SUA-")) return; // ainda não configurado
+  try {
+    const reg = await navigator.serviceWorker.register("sw.js");
+    let permission = Notification.permission;
+    if (permission === "default") permission = await Notification.requestPermission();
+    if (permission !== "granted") return;
+
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) {
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+      });
+    }
+    const json = sub.toJSON();
+    await supabase.from("push_subscriptions").upsert({
+      usuario_id: currentUser.id,
+      endpoint: json.endpoint,
+      p256dh: json.keys.p256dh,
+      auth: json.keys.auth,
+    }, { onConflict: "endpoint" });
+  } catch (e) {
+    console.warn("Push notification não configurada:", e);
+  }
+}
+
+async function notifyTaskAssignment(responsavel_id, titulo, tarefa_id) {
+  if (!responsavel_id) return;
+  try {
+    await supabase.functions.invoke("send-task-notification", {
+      body: { responsavel_id, titulo, tarefa_id },
+    });
+  } catch (e) {
+    console.warn("Notificação não enviada:", e);
+  }
+}
+
+async function checkSession() {
+  const { data } = await supabase.auth.getSession();
+  if (data.session) await afterLogin(data.session.user);
+}
+checkSession();
+
+async function loadReferenceData() {
+  const [{ data: usuarios }, { data: contratos }, { data: trabalhadores }, { data: quadros }] = await Promise.all([
+    supabase.from("usuarios").select("*").order("nome"),
+    supabase.from("contratos").select("*").order("nome"),
+    supabase.from("trabalhadores").select("*").order("nome"),
+    supabase.from("quadros").select("*").order("criado_em"),
+  ]);
+  cache.usuarios = usuarios || [];
+  cache.contratos = contratos || [];
+  cache.trabalhadores = trabalhadores || [];
+  if (quadros && quadros.length) {
+    cache.quadroId = quadros[0].id;
+  } else {
+    const { data: novoQuadro } = await supabase.from("quadros")
+      .insert({ nome: "Quadro geral", criado_por: currentUser.id }).select().single();
+    cache.quadroId = novoQuadro.id;
+  }
+}
+
+/* ============================================================
+   NAVEGAÇÃO
+   ============================================================ */
+document.querySelectorAll(".nav-item").forEach(el => {
+  el.addEventListener("click", () => setView(el.dataset.view));
+});
+document.getElementById("menu-toggle").addEventListener("click", () => {
+  document.getElementById("sidebar").classList.toggle("open");
+});
+
+const VIEW_META = {
+  dashboard: ["Dashboard", "Visão geral do que está acontecendo"],
+  tarefas: ["Quadro de tarefas", "Arraste os cartões entre as colunas"],
+  presenca: ["Presença", "Registro diário de presença da equipe de campo"],
+  insumos: ["Insumos", "Materiais e compras por contrato"],
+  atividades: ["Atividades", "Atividades executadas em campo"],
+  faturamento: ["Faturamento", "Períodos de faturamento por contrato"],
+  trabalhadores: ["Trabalhadores", "Equipe de campo e documentos"],
+  obras: ["Obras", "Contratos e obras ativas da Gramar"],
+  caixa: ["Caixa geral", "Entradas e saídas financeiras do dia a dia"],
+  caixinha_escritorio: ["Caixinha do escritório", "Dinheiro físico para despesas pequenas"],
+  caixinha_campo: ["Caixinha de campo", "Adiantamentos e gastos por obra"],
+  combustivel: ["Combustível", "Controle semanal de abastecimento por veículo"],
+  auditoria: ["Auditoria", "Histórico de ações no sistema"],
+};
+
+async function setView(view) {
+  if (!canView(view)) { toast("Você não tem acesso a essa área"); view = perms().views[0] || "dashboard"; }
+  currentView = view;
+  document.querySelectorAll(".nav-item").forEach(el => el.classList.toggle("active", el.dataset.view === view));
+  document.getElementById("sidebar").classList.remove("open");
+  const [title, sub] = VIEW_META[view];
+  document.getElementById("view-title").textContent = title;
+  document.getElementById("view-sub").textContent = sub;
+  document.getElementById("topbar-actions").innerHTML = "";
+  const content = document.getElementById("content");
+  content.innerHTML = `<div class="empty-state">Carregando…</div>`;
+  try {
+    if (view === "dashboard") await renderDashboard();
+    else if (view === "tarefas") await renderTarefas();
+    else if (view === "presenca") await renderPresenca();
+    else if (view === "insumos") await renderInsumos();
+    else if (view === "atividades") await renderAtividades();
+    else if (view === "faturamento") await renderFaturamento();
+    else if (view === "trabalhadores") await renderTrabalhadores();
+    else if (view === "obras") await renderObras();
+    else if (view === "caixa") await renderCaixaGeral();
+    else if (view === "caixinha_escritorio") await renderCaixinhaEscritorio();
+    else if (view === "caixinha_campo") await renderCaixinhaCampo();
+    else if (view === "combustivel") await renderCombustivel();
+    else if (view === "auditoria") await renderAuditoria();
+  } catch (e) {
+    console.error(e);
+    content.innerHTML = `<div class="empty-state"><div class="big">Não deu pra carregar essa tela</div>${e.message || ""}</div>`;
+  }
+}
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+async function renderDashboard() {
+  const content = document.getElementById("content");
+  const [{ data: tarefas }, { data: presencas }, { data: pendencias }, { data: insumos }] = await Promise.all([
+    supabase.from("tarefas").select("*"),
+    supabase.from("presencas").select("*").order("data", { ascending: false }).limit(200),
+    supabase.from("pendencias").select("*").eq("resolvida", false),
+    supabase.from("insumos").select("*").eq("status", "pendente"),
+  ]);
+  const abertas = (tarefas || []).filter(t => t.status !== "concluida").length;
+  const atrasadas = (tarefas || []).filter(t => t.status !== "concluida" && isLate(t.prazo)).length;
+
+  content.innerHTML = `
+    <div class="grid-stats">
+      <div class="stat"><div class="num">${abertas}</div><div class="label">Tarefas abertas</div></div>
+      <div class="stat"><div class="num">${atrasadas}</div><div class="label">Tarefas atrasadas</div></div>
+      <div class="stat"><div class="num">${(pendencias||[]).length}</div><div class="label">Pendências em aberto</div></div>
+      <div class="stat"><div class="num">${(insumos||[]).length}</div><div class="label">Insumos p/ aprovar</div></div>
+    </div>
+    <div class="two-col">
+      <div class="chart-wrap"><canvas id="chart-presenca" height="200"></canvas></div>
+      <div class="chart-wrap"><canvas id="chart-tarefas" height="200"></canvas></div>
+    </div>
+  `;
+
+  // gráfico de presença nos últimos 14 dias
+  const byDay = {};
+  (presencas || []).forEach(p => {
+    byDay[p.data] = byDay[p.data] || { presentes: 0, total: 0 };
+    byDay[p.data].total++;
+    if (p.presente) byDay[p.data].presentes++;
+  });
+  const days = Object.keys(byDay).sort().slice(-14);
+  new Chart(document.getElementById("chart-presenca"), {
+    type: "line",
+    data: {
+      labels: days.map(fmtDate),
+      datasets: [{
+        label: "Presença (%)",
+        data: days.map(d => Math.round((byDay[d].presentes / byDay[d].total) * 100)),
+        borderColor: "#2F5233", backgroundColor: "rgba(47,82,51,0.12)", tension: 0.3, fill: true,
+      }]
+    },
+    options: { plugins: { title: { display: true, text: "Presença — últimos dias" } }, scales: { y: { min: 0, max: 100 } } }
+  });
+
+  const porStatus = STATUS_TAREFA.map(s => (tarefas || []).filter(t => t.status === s.key).length);
+  new Chart(document.getElementById("chart-tarefas"), {
+    type: "doughnut",
+    data: {
+      labels: STATUS_TAREFA.map(s => s.label),
+      datasets: [{ data: porStatus, backgroundColor: ["#C98A1E", "#3E6E82", "#B5651D", "#2F5233"] }]
+    },
+    options: { plugins: { title: { display: true, text: "Tarefas por status" } } }
+  });
+}
+
+/* ============================================================
+   MÓDULO TAREFAS — KANBAN
+   ============================================================ */
+async function renderTarefas() {
+  document.getElementById("topbar-actions").innerHTML =
+    `<button class="btn btn-primary" id="new-task-btn">+ Nova tarefa</button>`;
+  document.getElementById("new-task-btn").onclick = () => openTaskModal();
+
+  const { data: tarefas } = await supabase.from("tarefas").select("*").eq("quadro_id", cache.quadroId).order("posicao");
+  const content = document.getElementById("content");
+  content.innerHTML = `<div class="board" id="board"></div>`;
+  const board = document.getElementById("board");
+
+  STATUS_TAREFA.forEach(col => {
+    const items = (tarefas || []).filter(t => t.status === col.key);
+    const colEl = document.createElement("div");
+    colEl.className = "col";
+    colEl.dataset.status = col.key;
+    colEl.innerHTML = `
+      <div class="col-head"><span class="name">${col.label}</span><span class="count">${items.length}</span></div>
+      <div class="col-body" data-status="${col.key}"></div>
+    `;
+    const body = colEl.querySelector(".col-body");
+    items.forEach(t => body.appendChild(taskCardEl(t)));
+    body.addEventListener("dragover", (e) => e.preventDefault());
+    body.addEventListener("drop", async (e) => {
+      e.preventDefault();
+      const id = e.dataTransfer.getData("text/task-id");
+      if (!id) return;
+      await supabase.from("tarefas").update({ status: col.key, atualizado_em: new Date().toISOString() }).eq("id", id);
+      await logAudit("tarefas", "mudar_status", "tarefa", id, { novo_status: col.key });
+      renderTarefas();
+    });
+    board.appendChild(colEl);
+  });
+}
+
+function taskCardEl(t) {
+  const el = document.createElement("div");
+  el.className = "card-task";
+  el.draggable = true;
+  const resp = cache.usuarios.find(u => u.id === t.responsavel_id);
+  el.innerHTML = `
+    <div class="t">${escapeHtml(t.titulo)}</div>
+    <div class="meta">
+      <span class="pill pill-${t.prioridade}">${t.prioridade}</span>
+      <span class="due ${isLate(t.prazo) && t.status !== 'concluida' ? 'late' : ''}">${t.prazo ? fmtDate(t.prazo) : ''}</span>
+      ${resp ? `<span class="assignee-dot" title="${escapeHtml(resp.nome)}">${initials(resp.nome)}</span>` : ""}
+    </div>
+  `;
+  el.addEventListener("dragstart", (e) => {
+    e.dataTransfer.setData("text/task-id", t.id);
+    el.classList.add("dragging");
+  });
+  el.addEventListener("dragend", () => el.classList.remove("dragging"));
+  el.addEventListener("click", () => openTaskModal(t));
+  return el;
+}
+
+function escapeHtml(s) {
+  return (s || "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+function openTaskModal(task) {
+  const isEdit = !!task;
+  const userOptions = cache.usuarios.map(u => `<option value="${u.id}" ${task?.responsavel_id === u.id ? "selected" : ""}>${escapeHtml(u.nome)}</option>`).join("");
+  openModal(`
+    <h3>${isEdit ? "Editar tarefa" : "Nova tarefa"}</h3>
+    <div class="field"><label>Título</label><input id="tk-titulo" value="${task ? escapeHtml(task.titulo) : ""}" /></div>
+    <div class="field"><label>Descrição</label><textarea id="tk-desc">${task ? escapeHtml(task.descricao || "") : ""}</textarea></div>
+    <div class="field"><label>Responsável</label><select id="tk-resp"><option value="">—</option>${userOptions}</select></div>
+    <div class="field"><label>Prioridade</label>
+      <select id="tk-prior">
+        ${["baixa","media","alta","urgente"].map(p => `<option value="${p}" ${task?.prioridade===p?"selected":""}>${p}</option>`).join("")}
+      </select>
+    </div>
+    <div class="field"><label>Prazo</label><input type="date" id="tk-prazo" value="${task?.prazo || ""}" /></div>
+    <div class="modal-actions">
+      ${isEdit ? `<button class="btn btn-danger-outline" id="tk-del">Excluir</button>` : ""}
+      <button class="btn btn-ghost" id="tk-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="tk-save">Salvar</button>
+    </div>
+  `);
+  document.getElementById("tk-cancel").onclick = closeModal;
+  document.getElementById("tk-save").onclick = async () => {
+    const payload = {
+      titulo: document.getElementById("tk-titulo").value.trim(),
+      descricao: document.getElementById("tk-desc").value.trim(),
+      responsavel_id: document.getElementById("tk-resp").value || null,
+      prioridade: document.getElementById("tk-prior").value,
+      prazo: document.getElementById("tk-prazo").value || null,
+      atualizado_em: new Date().toISOString(),
+    };
+    if (!payload.titulo) { toast("Dá um título pra tarefa"); return; }
+    if (isEdit) {
+      await supabase.from("tarefas").update(payload).eq("id", task.id);
+      await logAudit("tarefas", "editar", "tarefa", task.id, payload);
+    } else {
+      payload.quadro_id = cache.quadroId;
+      payload.criado_por = currentUser.id;
+      const { data } = await supabase.from("tarefas").insert(payload).select().single();
+      await logAudit("tarefas", "criar", "tarefa", data.id, payload);
+      notifyTaskAssignment(payload.responsavel_id, payload.titulo, data.id);
+    }
+    closeModal(); toast("Tarefa salva"); renderTarefas();
+  };
+  if (isEdit) {
+    document.getElementById("tk-del").onclick = async () => {
+      if (!confirm("Excluir esta tarefa?")) return;
+      await supabase.from("tarefas").delete().eq("id", task.id);
+      await logAudit("tarefas", "excluir", "tarefa", task.id, {});
+      closeModal(); toast("Tarefa excluída"); renderTarefas();
+    };
+  }
+}
+
+/* ============================================================
+   MÓDULO MEDIÇÕES — PRESENÇA
+   ============================================================ */
+async function renderPresenca() {
+  document.getElementById("topbar-actions").innerHTML = `<button class="btn btn-primary" id="new-presenca-btn">+ Registrar presença</button>`;
+  document.getElementById("new-presenca-btn").onclick = () => openPresencaModal();
+
+  const { data: rows } = await supabase.from("presencas").select("*, trabalhadores(nome)").order("data", { ascending: false }).limit(100);
+  const content = document.getElementById("content");
+  content.innerHTML = `
+    <div class="panel">
+      <table>
+        <thead><tr><th>Data</th><th>Trabalhador</th><th>Presente</th><th>Observação</th><th></th></tr></thead>
+        <tbody>
+          ${(rows||[]).map(r => `
+            <tr>
+              <td>${fmtDate(r.data)}</td>
+              <td>${escapeHtml(r.trabalhadores?.nome || "—")}</td>
+              <td><span class="status-badge ${r.presente ? 'status-aprovado' : 'status-rejeitado'}">${r.presente ? "Presente" : "Ausente"}</span></td>
+              <td>${escapeHtml(r.observacao || "—")}</td>
+              <td><button class="btn btn-ghost edit-presenca" data-id="${r.id}">Editar</button></td>
+            </tr>
+          `).join("") || `<tr><td colspan="5"><div class="empty-state">Nenhum registro ainda</div></td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  `;
+  content.querySelectorAll(".edit-presenca").forEach(btn => {
+    btn.onclick = async () => {
+      const { data: r } = await supabase.from("presencas").select("*").eq("id", btn.dataset.id).single();
+      openPresencaModal(r);
+    };
+  });
+}
+
+function openPresencaModal(row) {
+  const isEdit = !!row;
+  const options = cache.trabalhadores.map(t => `<option value="${t.id}" ${row?.trabalhador_id===t.id?"selected":""}>${escapeHtml(t.nome)}</option>`).join("");
+  openModal(`
+    <h3>${isEdit ? "Editar presença" : "Registrar presença"}</h3>
+    <div class="field"><label>Trabalhador</label><select id="pr-trab">${options}</select></div>
+    <div class="field"><label>Data</label><input type="date" id="pr-data" value="${row?.data || new Date().toISOString().slice(0,10)}" /></div>
+    <div class="field"><label><input type="checkbox" id="pr-presente" ${row ? (row.presente?"checked":"") : "checked"} /> Presente</label></div>
+    <div class="field"><label>Observação</label><textarea id="pr-obs">${row ? escapeHtml(row.observacao || "") : ""}</textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="pr-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="pr-save">Salvar</button>
+    </div>
+  `);
+  document.getElementById("pr-cancel").onclick = closeModal;
+  document.getElementById("pr-save").onclick = async () => {
+    const payload = {
+      trabalhador_id: document.getElementById("pr-trab").value,
+      data: document.getElementById("pr-data").value,
+      presente: document.getElementById("pr-presente").checked,
+      observacao: document.getElementById("pr-obs").value.trim(),
+      registrado_por: currentUser.id,
+    };
+    if (isEdit) await supabase.from("presencas").update(payload).eq("id", row.id);
+    else await supabase.from("presencas").upsert(payload, { onConflict: "trabalhador_id,data" });
+    await logAudit("medicoes", isEdit ? "editar" : "criar", "presenca", row?.id, payload);
+    closeModal(); toast("Presença salva"); renderPresenca();
+  };
+}
+
+/* ============================================================
+   MÓDULO MEDIÇÕES — INSUMOS
+   ============================================================ */
+async function renderInsumos() {
+  const editavel = canWrite("insumos");
+  document.getElementById("topbar-actions").innerHTML = editavel ? `<button class="btn btn-primary" id="new-insumo-btn">+ Novo insumo</button>` : "";
+  if (editavel) document.getElementById("new-insumo-btn").onclick = () => openInsumoModal();
+
+  const { data: rows } = await supabase.from("insumos").select("*, contratos(nome)").order("data", { ascending: false }).limit(100);
+  renderStatusTable(rows, "insumos", [
+    { h: "Data", f: r => fmtDate(r.data) },
+    { h: "Contrato", f: r => r.contratos?.nome || "—" },
+    { h: "Descrição", f: r => r.descricao },
+    { h: "Qtd", f: r => `${r.quantidade ?? "—"} ${r.unidade || ""}` },
+    { h: "Valor total", f: r => fmtMoney(r.valor_total) },
+  ], openInsumoModal, editavel);
+}
+
+function openInsumoModal(row) {
+  const isEdit = !!row;
+  const options = cache.contratos.map(c => `<option value="${c.id}" ${row?.contrato_id===c.id?"selected":""}>${escapeHtml(c.nome)}</option>`).join("");
+  openModal(`
+    <h3>${isEdit ? "Editar insumo" : "Novo insumo"}</h3>
+    <div class="field"><label>Contrato</label><select id="in-contrato"><option value="">—</option>${options}</select></div>
+    <div class="field"><label>Descrição</label><input id="in-desc" value="${row ? escapeHtml(row.descricao) : ""}" /></div>
+    <div class="field"><label>Data</label><input type="date" id="in-data" value="${row?.data || new Date().toISOString().slice(0,10)}" /></div>
+    <div class="field"><label>Quantidade</label><input type="number" step="0.01" id="in-qtd" value="${row?.quantidade ?? ""}" /></div>
+    <div class="field"><label>Unidade</label><input id="in-unid" value="${row?.unidade || ""}" /></div>
+    <div class="field"><label>Valor total (R$)</label><input type="number" step="0.01" id="in-valor" value="${row?.valor_total ?? ""}" /></div>
+    <div class="field"><label>Status</label>
+      <select id="in-status">${["pendente","aprovado","rejeitado"].map(s=>`<option value="${s}" ${row?.status===s?"selected":""}>${s}</option>`).join("")}</select>
+    </div>
+    <div class="modal-actions">
+      ${isEdit ? `<button class="btn btn-danger-outline" id="in-del">Excluir</button>` : ""}
+      <button class="btn btn-ghost" id="in-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="in-save">Salvar</button>
+    </div>
+  `);
+  document.getElementById("in-cancel").onclick = closeModal;
+  document.getElementById("in-save").onclick = async () => {
+    const payload = {
+      contrato_id: document.getElementById("in-contrato").value || null,
+      descricao: document.getElementById("in-desc").value.trim(),
+      data: document.getElementById("in-data").value,
+      quantidade: document.getElementById("in-qtd").value || null,
+      unidade: document.getElementById("in-unid").value.trim(),
+      valor_total: document.getElementById("in-valor").value || null,
+      status: document.getElementById("in-status").value,
+      registrado_por: currentUser.id,
+    };
+    if (!payload.descricao) { toast("Descreve o insumo"); return; }
+    if (isEdit) { await supabase.from("insumos").update(payload).eq("id", row.id); }
+    else { await supabase.from("insumos").insert(payload); }
+    await logAudit("medicoes", isEdit ? "editar" : "criar", "insumo", row?.id, payload);
+    closeModal(); toast("Insumo salvo"); renderInsumos();
+  };
+  if (isEdit) document.getElementById("in-del").onclick = async () => {
+    if (!confirm("Excluir este insumo?")) return;
+    await supabase.from("insumos").delete().eq("id", row.id);
+    closeModal(); toast("Excluído"); renderInsumos();
+  };
+}
+
+/* ============================================================
+   MÓDULO MEDIÇÕES — ATIVIDADES
+   ============================================================ */
+async function renderAtividades() {
+  const editavel = canWrite("atividades");
+  document.getElementById("topbar-actions").innerHTML = editavel ? `<button class="btn btn-primary" id="new-ativ-btn">+ Nova atividade</button>` : "";
+  if (editavel) document.getElementById("new-ativ-btn").onclick = () => openAtividadeModal();
+
+  const { data: rows } = await supabase.from("atividades").select("*, contratos(nome)").order("data", { ascending: false }).limit(100);
+  renderStatusTable(rows, "atividades", [
+    { h: "Data", f: r => fmtDate(r.data) },
+    { h: "Contrato", f: r => r.contratos?.nome || "—" },
+    { h: "Descrição", f: r => r.descricao },
+  ], openAtividadeModal, editavel);
+}
+
+function openAtividadeModal(row) {
+  const isEdit = !!row;
+  const options = cache.contratos.map(c => `<option value="${c.id}" ${row?.contrato_id===c.id?"selected":""}>${escapeHtml(c.nome)}</option>`).join("");
+  openModal(`
+    <h3>${isEdit ? "Editar atividade" : "Nova atividade"}</h3>
+    <div class="field"><label>Contrato</label><select id="at-contrato"><option value="">—</option>${options}</select></div>
+    <div class="field"><label>Descrição</label><textarea id="at-desc">${row ? escapeHtml(row.descricao) : ""}</textarea></div>
+    <div class="field"><label>Data</label><input type="date" id="at-data" value="${row?.data || new Date().toISOString().slice(0,10)}" /></div>
+    <div class="field"><label>Status</label>
+      <select id="at-status">${["pendente","aprovado","rejeitado"].map(s=>`<option value="${s}" ${row?.status===s?"selected":""}>${s}</option>`).join("")}</select>
+    </div>
+    <div class="modal-actions">
+      ${isEdit ? `<button class="btn btn-danger-outline" id="at-del">Excluir</button>` : ""}
+      <button class="btn btn-ghost" id="at-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="at-save">Salvar</button>
+    </div>
+  `);
+  document.getElementById("at-cancel").onclick = closeModal;
+  document.getElementById("at-save").onclick = async () => {
+    const payload = {
+      contrato_id: document.getElementById("at-contrato").value || null,
+      descricao: document.getElementById("at-desc").value.trim(),
+      data: document.getElementById("at-data").value,
+      status: document.getElementById("at-status").value,
+      registrado_por: currentUser.id,
+    };
+    if (!payload.descricao) { toast("Descreve a atividade"); return; }
+    if (isEdit) await supabase.from("atividades").update(payload).eq("id", row.id);
+    else await supabase.from("atividades").insert(payload);
+    await logAudit("medicoes", isEdit ? "editar" : "criar", "atividade", row?.id, payload);
+    closeModal(); toast("Atividade salva"); renderAtividades();
+  };
+  if (isEdit) document.getElementById("at-del").onclick = async () => {
+    if (!confirm("Excluir esta atividade?")) return;
+    await supabase.from("atividades").delete().eq("id", row.id);
+    closeModal(); toast("Excluída"); renderAtividades();
+  };
+}
+
+/* ============================================================
+   MÓDULO MEDIÇÕES — FATURAMENTO
+   ============================================================ */
+async function renderFaturamento() {
+  const editavel = canWrite("faturamento");
+  document.getElementById("topbar-actions").innerHTML = editavel ? `<button class="btn btn-primary" id="new-fat-btn">+ Novo período</button>` : "";
+  if (editavel) document.getElementById("new-fat-btn").onclick = () => openFaturamentoModal();
+
+  const { data: rows } = await supabase.from("faturamentos").select("*, contratos(nome)").order("periodo_inicio", { ascending: false });
+  const content = document.getElementById("content");
+  content.innerHTML = `
+    <div class="panel">
+      <table>
+        <thead><tr><th>Contrato</th><th>Período</th><th>Valor</th><th>Status</th>${editavel ? "<th></th>" : ""}</tr></thead>
+        <tbody>
+          ${(rows||[]).map(r => `
+            <tr>
+              <td>${escapeHtml(r.contratos?.nome || "—")}</td>
+              <td>${fmtDate(r.periodo_inicio)} – ${fmtDate(r.periodo_fim)}</td>
+              <td>${fmtMoney(r.valor_total)}</td>
+              <td><span class="status-badge status-${r.status}">${r.status}</span></td>
+              ${editavel ? `<td><button class="btn btn-ghost edit-fat" data-id="${r.id}">Editar</button></td>` : ""}
+            </tr>
+          `).join("") || `<tr><td colspan="5"><div class="empty-state">Nenhum período cadastrado</div></td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  `;
+  if (editavel) content.querySelectorAll(".edit-fat").forEach(btn => {
+    btn.onclick = async () => {
+      const { data: r } = await supabase.from("faturamentos").select("*").eq("id", btn.dataset.id).single();
+      openFaturamentoModal(r);
+    };
+  });
+}
+
+function openFaturamentoModal(row) {
+  const isEdit = !!row;
+  const options = cache.contratos.map(c => `<option value="${c.id}" ${row?.contrato_id===c.id?"selected":""}>${escapeHtml(c.nome)}</option>`).join("");
+  openModal(`
+    <h3>${isEdit ? "Editar período" : "Novo período de faturamento"}</h3>
+    <div class="field"><label>Contrato</label><select id="fa-contrato"><option value="">—</option>${options}</select></div>
+    <div class="field"><label>Início</label><input type="date" id="fa-ini" value="${row?.periodo_inicio || ""}" /></div>
+    <div class="field"><label>Fim</label><input type="date" id="fa-fim" value="${row?.periodo_fim || ""}" /></div>
+    <div class="field"><label>Valor total (R$)</label><input type="number" step="0.01" id="fa-valor" value="${row?.valor_total ?? ""}" /></div>
+    <div class="field"><label>Status</label>
+      <select id="fa-status">${["aberto","fechado","enviado","pago"].map(s=>`<option value="${s}" ${row?.status===s?"selected":""}>${s}</option>`).join("")}</select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="fa-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="fa-save">Salvar</button>
+    </div>
+  `);
+  document.getElementById("fa-cancel").onclick = closeModal;
+  document.getElementById("fa-save").onclick = async () => {
+    const payload = {
+      contrato_id: document.getElementById("fa-contrato").value || null,
+      periodo_inicio: document.getElementById("fa-ini").value,
+      periodo_fim: document.getElementById("fa-fim").value,
+      valor_total: document.getElementById("fa-valor").value || null,
+      status: document.getElementById("fa-status").value,
+    };
+    if (isEdit) await supabase.from("faturamentos").update(payload).eq("id", row.id);
+    else await supabase.from("faturamentos").insert(payload);
+    await logAudit("medicoes", isEdit ? "editar" : "criar", "faturamento", row?.id, payload);
+    closeModal(); toast("Período salvo"); renderFaturamento();
+  };
+}
+
+/* ============================================================
+   MÓDULO MEDIÇÕES — TRABALHADORES
+   ============================================================ */
+async function renderTrabalhadores() {
+  const editavel = canWrite("trabalhadores");
+  document.getElementById("topbar-actions").innerHTML = editavel ? `<button class="btn btn-primary" id="new-trab-btn">+ Novo trabalhador</button>` : "";
+  if (editavel) document.getElementById("new-trab-btn").onclick = () => openTrabalhadorModal();
+
+  const { data: rows } = await supabase.from("trabalhadores").select("*, contratos(nome)").order("nome");
+  const content = document.getElementById("content");
+  content.innerHTML = `
+    <div class="panel">
+      <table>
+        <thead><tr><th>Nome</th><th>Função</th><th>Contrato</th><th>Status</th>${editavel ? "<th></th>" : ""}</tr></thead>
+        <tbody>
+          ${(rows||[]).map(r => `
+            <tr>
+              <td>${escapeHtml(r.nome)}</td>
+              <td>${escapeHtml(r.funcao || "—")}</td>
+              <td>${escapeHtml(r.contratos?.nome || "—")}</td>
+              <td><span class="status-badge ${r.ativo?'status-aprovado':'status-rejeitado'}">${r.ativo ? "Ativo" : "Inativo"}</span></td>
+              ${editavel ? `<td><button class="btn btn-ghost edit-trab" data-id="${r.id}">Editar</button></td>` : ""}
+            </tr>
+          `).join("") || `<tr><td colspan="5"><div class="empty-state">Nenhum trabalhador cadastrado</div></td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  `;
+  if (editavel) content.querySelectorAll(".edit-trab").forEach(btn => {
+    btn.onclick = async () => {
+      const { data: r } = await supabase.from("trabalhadores").select("*").eq("id", btn.dataset.id).single();
+      openTrabalhadorModal(r);
+    };
+  });
+}
+
+function openTrabalhadorModal(row) {
+  const isEdit = !!row;
+  const options = cache.contratos.map(c => `<option value="${c.id}" ${row?.contrato_id===c.id?"selected":""}>${escapeHtml(c.nome)}</option>`).join("");
+  openModal(`
+    <h3>${isEdit ? "Editar trabalhador" : "Novo trabalhador"}</h3>
+    <div class="field"><label>Nome</label><input id="tr-nome" value="${row ? escapeHtml(row.nome) : ""}" /></div>
+    <div class="field"><label>Função</label><input id="tr-funcao" value="${row?.funcao || ""}" /></div>
+    <div class="field"><label>Contrato</label><select id="tr-contrato"><option value="">—</option>${options}</select></div>
+    <div class="field"><label><input type="checkbox" id="tr-ativo" ${row ? (row.ativo?"checked":"") : "checked"} /> Ativo</label></div>
+    <div class="modal-actions">
+      ${isEdit ? `<button class="btn btn-danger-outline" id="tr-del">Excluir</button>` : ""}
+      <button class="btn btn-ghost" id="tr-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="tr-save">Salvar</button>
+    </div>
+  `);
+  document.getElementById("tr-cancel").onclick = closeModal;
+  document.getElementById("tr-save").onclick = async () => {
+    const payload = {
+      nome: document.getElementById("tr-nome").value.trim(),
+      funcao: document.getElementById("tr-funcao").value.trim(),
+      contrato_id: document.getElementById("tr-contrato").value || null,
+      ativo: document.getElementById("tr-ativo").checked,
+    };
+    if (!payload.nome) { toast("Informe o nome"); return; }
+    if (isEdit) await supabase.from("trabalhadores").update(payload).eq("id", row.id);
+    else await supabase.from("trabalhadores").insert(payload);
+    await loadReferenceData();
+    closeModal(); toast("Trabalhador salvo"); renderTrabalhadores();
+  };
+  if (isEdit) document.getElementById("tr-del").onclick = async () => {
+    if (!confirm(`Excluir ${row.nome}? Essa ação não pode ser desfeita.\n\nDica: se foi demitido recentemente, considere desmarcar "Ativo" em vez de excluir, pra manter o histórico de presença dele.`)) return;
+    await supabase.from("trabalhadores").delete().eq("id", row.id);
+    await logAudit("medicoes", "excluir", "trabalhador", row.id, { nome: row.nome });
+    await loadReferenceData();
+    closeModal(); toast("Trabalhador excluído"); renderTrabalhadores();
+  };
+}
+
+/* ============================================================
+   OBRAS / CONTRATOS
+   ============================================================ */
+async function renderObras() {
+  const editavel = canWrite("obras");
+  document.getElementById("topbar-actions").innerHTML = editavel ? `<button class="btn btn-primary" id="new-obra-btn">+ Nova obra</button>` : "";
+  if (editavel) document.getElementById("new-obra-btn").onclick = () => openObraModal();
+
+  const { data: rows } = await supabase.from("contratos").select("*").order("nome");
+  const content = document.getElementById("content");
+  content.innerHTML = `
+    <div class="panel">
+      <table>
+        <thead><tr><th>Nome da obra</th><th>Cliente</th><th>Status</th>${editavel ? "<th></th>" : ""}</tr></thead>
+        <tbody>
+          ${(rows||[]).map(r => `
+            <tr>
+              <td>${escapeHtml(r.nome)}</td>
+              <td>${escapeHtml(r.cliente || "—")}</td>
+              <td><span class="status-badge ${r.ativo?'status-aprovado':'status-rejeitado'}">${r.ativo ? "Ativa" : "Inativa"}</span></td>
+              ${editavel ? `<td><button class="btn btn-ghost edit-obra" data-id="${r.id}">Editar</button></td>` : ""}
+            </tr>
+          `).join("") || `<tr><td colspan="4"><div class="empty-state">Nenhuma obra cadastrada ainda</div></td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  `;
+  if (editavel) content.querySelectorAll(".edit-obra").forEach(btn => {
+    btn.onclick = async () => {
+      const { data: r } = await supabase.from("contratos").select("*").eq("id", btn.dataset.id).single();
+      openObraModal(r);
+    };
+  });
+}
+
+function openObraModal(row) {
+  const isEdit = !!row;
+  openModal(`
+    <h3>${isEdit ? "Editar obra" : "Nova obra"}</h3>
+    <div class="field"><label>Nome da obra</label><input id="ob-nome" value="${row ? escapeHtml(row.nome) : ""}" /></div>
+    <div class="field"><label>Cliente</label><input id="ob-cliente" value="${row?.cliente || ""}" /></div>
+    <div class="field"><label><input type="checkbox" id="ob-ativo" ${row ? (row.ativo?"checked":"") : "checked"} /> Ativa</label></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="ob-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="ob-save">Salvar</button>
+    </div>
+  `);
+  document.getElementById("ob-cancel").onclick = closeModal;
+  document.getElementById("ob-save").onclick = async () => {
+    const payload = {
+      nome: document.getElementById("ob-nome").value.trim(),
+      cliente: document.getElementById("ob-cliente").value.trim(),
+      ativo: document.getElementById("ob-ativo").checked,
+    };
+    if (!payload.nome) { toast("Dá um nome pra obra"); return; }
+    if (isEdit) await supabase.from("contratos").update(payload).eq("id", row.id);
+    else await supabase.from("contratos").insert(payload);
+    await logAudit("obras", isEdit ? "editar" : "criar", "contrato", row?.id, payload);
+    await loadReferenceData();
+    closeModal(); toast("Obra salva"); renderObras();
+  };
+}
+
+/* ============================================================
+   CAIXA GERAL — entradas e saídas do dia (Priscilla)
+   ============================================================ */
+async function renderCaixaGeral() {
+  const editavel = canWrite("caixa");
+  document.getElementById("topbar-actions").innerHTML = editavel ? `<button class="btn btn-primary" id="new-caixa-btn">+ Novo lançamento</button>` : "";
+  if (editavel) document.getElementById("new-caixa-btn").onclick = () => openCaixaModal();
+
+  const { data: rows } = await supabase.from("caixa_geral").select("*").order("data", { ascending: false }).limit(200);
+  const entradas = (rows||[]).filter(r=>r.tipo==="entrada").reduce((s,r)=>s+Number(r.valor),0);
+  const saidas = (rows||[]).filter(r=>r.tipo==="saida").reduce((s,r)=>s+Number(r.valor),0);
+  const content = document.getElementById("content");
+  content.innerHTML = `
+    <div class="grid-stats">
+      <div class="stat"><div class="num" style="color:var(--moss-dark)">${fmtMoney(entradas)}</div><div class="label">Entradas (últimos lançamentos)</div></div>
+      <div class="stat"><div class="num" style="color:var(--danger)">${fmtMoney(saidas)}</div><div class="label">Saídas (últimos lançamentos)</div></div>
+      <div class="stat"><div class="num">${fmtMoney(entradas - saidas)}</div><div class="label">Saldo do período</div></div>
+    </div>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Data</th><th>Tipo</th><th>Categoria</th><th>Descrição</th><th>Valor</th>${editavel ? "<th></th>" : ""}</tr></thead>
+        <tbody>
+          ${(rows||[]).map(r => `
+            <tr>
+              <td>${fmtDate(r.data)}</td>
+              <td><span class="status-badge ${r.tipo==='entrada'?'status-aprovado':'status-rejeitado'}">${r.tipo}</span></td>
+              <td>${escapeHtml(r.categoria || "—")}</td>
+              <td>${escapeHtml(r.descricao)}</td>
+              <td>${fmtMoney(r.valor)}</td>
+              ${editavel ? `<td><button class="btn btn-ghost edit-caixa" data-id="${r.id}">Editar</button></td>` : ""}
+            </tr>
+          `).join("") || `<tr><td colspan="6"><div class="empty-state">Nenhum lançamento ainda</div></td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  `;
+  if (editavel) content.querySelectorAll(".edit-caixa").forEach(btn => {
+    btn.onclick = async () => {
+      const { data: r } = await supabase.from("caixa_geral").select("*").eq("id", btn.dataset.id).single();
+      openCaixaModal(r);
+    };
+  });
+}
+
+function openCaixaModal(row) {
+  const isEdit = !!row;
+  openModal(`
+    <h3>${isEdit ? "Editar lançamento" : "Novo lançamento — Caixa geral"}</h3>
+    <div class="field"><label>Tipo</label>
+      <select id="cx-tipo"><option value="entrada" ${row?.tipo==='entrada'?'selected':''}>Entrada</option><option value="saida" ${row?.tipo==='saida'?'selected':''}>Saída</option></select>
+    </div>
+    <div class="field"><label>Data</label><input type="date" id="cx-data" value="${row?.data || new Date().toISOString().slice(0,10)}" /></div>
+    <div class="field"><label>Categoria</label><input id="cx-cat" value="${row?.categoria || ""}" placeholder="ex: recebimento, salário, fornecedor..." /></div>
+    <div class="field"><label>Descrição</label><input id="cx-desc" value="${row ? escapeHtml(row.descricao) : ""}" /></div>
+    <div class="field"><label>Valor (R$)</label><input type="number" step="0.01" id="cx-valor" value="${row?.valor ?? ""}" /></div>
+    <div class="modal-actions">
+      ${isEdit ? `<button class="btn btn-danger-outline" id="cx-del">Excluir</button>` : ""}
+      <button class="btn btn-ghost" id="cx-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="cx-save">Salvar</button>
+    </div>
+  `);
+  document.getElementById("cx-cancel").onclick = closeModal;
+  document.getElementById("cx-save").onclick = async () => {
+    const payload = {
+      tipo: document.getElementById("cx-tipo").value,
+      data: document.getElementById("cx-data").value,
+      categoria: document.getElementById("cx-cat").value.trim(),
+      descricao: document.getElementById("cx-desc").value.trim(),
+      valor: document.getElementById("cx-valor").value || 0,
+      registrado_por: currentUser.id,
+    };
+    if (!payload.descricao || !payload.valor) { toast("Preencha descrição e valor"); return; }
+    if (isEdit) await supabase.from("caixa_geral").update(payload).eq("id", row.id);
+    else await supabase.from("caixa_geral").insert(payload);
+    await logAudit("financeiro", isEdit ? "editar" : "criar", "caixa_geral", row?.id, payload);
+    closeModal(); toast("Lançamento salvo"); renderCaixaGeral();
+  };
+  if (isEdit) document.getElementById("cx-del").onclick = async () => {
+    if (!confirm("Excluir este lançamento?")) return;
+    await supabase.from("caixa_geral").delete().eq("id", row.id);
+    closeModal(); toast("Excluído"); renderCaixaGeral();
+  };
+}
+
+/* ============================================================
+   CAIXINHA DO ESCRITÓRIO (Itallo)
+   ============================================================ */
+async function renderCaixinhaEscritorio() {
+  const editavel = canWrite("caixinha_escritorio");
+  document.getElementById("topbar-actions").innerHTML = editavel ? `<button class="btn btn-primary" id="new-cxe-btn">+ Novo lançamento</button>` : "";
+  if (editavel) document.getElementById("new-cxe-btn").onclick = () => openCaixinhaEscritorioModal();
+
+  const { data: rows } = await supabase.from("caixinha_escritorio").select("*").order("data", { ascending: false }).limit(200);
+  const suprimentos = (rows||[]).filter(r=>r.tipo==="suprimento").reduce((s,r)=>s+Number(r.valor),0);
+  const despesas = (rows||[]).filter(r=>r.tipo==="despesa").reduce((s,r)=>s+Number(r.valor),0);
+  const content = document.getElementById("content");
+  content.innerHTML = `
+    <div class="grid-stats">
+      <div class="stat"><div class="num">${fmtMoney(suprimentos - despesas)}</div><div class="label">Saldo disponível</div></div>
+      <div class="stat"><div class="num" style="color:var(--moss-dark)">${fmtMoney(suprimentos)}</div><div class="label">Total suprido</div></div>
+      <div class="stat"><div class="num" style="color:var(--danger)">${fmtMoney(despesas)}</div><div class="label">Total gasto</div></div>
+    </div>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Data</th><th>Tipo</th><th>Descrição</th><th>Comprovante</th><th>Valor</th>${editavel ? "<th></th>" : ""}</tr></thead>
+        <tbody>
+          ${(rows||[]).map(r => `
+            <tr>
+              <td>${fmtDate(r.data)}</td>
+              <td><span class="status-badge ${r.tipo==='suprimento'?'status-aprovado':'status-rejeitado'}">${r.tipo}</span></td>
+              <td>${escapeHtml(r.descricao)}</td>
+              <td>${escapeHtml(r.comprovante_obs || "—")}</td>
+              <td>${fmtMoney(r.valor)}</td>
+              ${editavel ? `<td><button class="btn btn-ghost edit-cxe" data-id="${r.id}">Editar</button></td>` : ""}
+            </tr>
+          `).join("") || `<tr><td colspan="6"><div class="empty-state">Nenhum lançamento ainda</div></td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  `;
+  if (editavel) content.querySelectorAll(".edit-cxe").forEach(btn => {
+    btn.onclick = async () => {
+      const { data: r } = await supabase.from("caixinha_escritorio").select("*").eq("id", btn.dataset.id).single();
+      openCaixinhaEscritorioModal(r);
+    };
+  });
+}
+
+function openCaixinhaEscritorioModal(row) {
+  const isEdit = !!row;
+  openModal(`
+    <h3>${isEdit ? "Editar lançamento" : "Novo lançamento — Caixinha do escritório"}</h3>
+    <div class="field"><label>Tipo</label>
+      <select id="cxe-tipo"><option value="suprimento" ${row?.tipo==='suprimento'?'selected':''}>Suprimento (entrada de dinheiro)</option><option value="despesa" ${row?.tipo==='despesa'?'selected':''}>Despesa</option></select>
+    </div>
+    <div class="field"><label>Data</label><input type="date" id="cxe-data" value="${row?.data || new Date().toISOString().slice(0,10)}" /></div>
+    <div class="field"><label>Descrição</label><input id="cxe-desc" value="${row ? escapeHtml(row.descricao) : ""}" /></div>
+    <div class="field"><label>Comprovante / observação</label><input id="cxe-comp" value="${row?.comprovante_obs || ""}" placeholder="ex: nota fiscal nº..., recibo do mercado..." /></div>
+    <div class="field"><label>Valor (R$)</label><input type="number" step="0.01" id="cxe-valor" value="${row?.valor ?? ""}" /></div>
+    <div class="modal-actions">
+      ${isEdit ? `<button class="btn btn-danger-outline" id="cxe-del">Excluir</button>` : ""}
+      <button class="btn btn-ghost" id="cxe-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="cxe-save">Salvar</button>
+    </div>
+  `);
+  document.getElementById("cxe-cancel").onclick = closeModal;
+  document.getElementById("cxe-save").onclick = async () => {
+    const payload = {
+      tipo: document.getElementById("cxe-tipo").value,
+      data: document.getElementById("cxe-data").value,
+      descricao: document.getElementById("cxe-desc").value.trim(),
+      comprovante_obs: document.getElementById("cxe-comp").value.trim(),
+      valor: document.getElementById("cxe-valor").value || 0,
+      registrado_por: currentUser.id,
+    };
+    if (!payload.descricao || !payload.valor) { toast("Preencha descrição e valor"); return; }
+    if (isEdit) await supabase.from("caixinha_escritorio").update(payload).eq("id", row.id);
+    else await supabase.from("caixinha_escritorio").insert(payload);
+    await logAudit("financeiro", isEdit ? "editar" : "criar", "caixinha_escritorio", row?.id, payload);
+    closeModal(); toast("Lançamento salvo"); renderCaixinhaEscritorio();
+  };
+  if (isEdit) document.getElementById("cxe-del").onclick = async () => {
+    if (!confirm("Excluir este lançamento?")) return;
+    await supabase.from("caixinha_escritorio").delete().eq("id", row.id);
+    closeModal(); toast("Excluído"); renderCaixinhaEscritorio();
+  };
+}
+
+/* ============================================================
+   CAIXINHA DE CAMPO — adiantamento por obra (Ronaldo/Mateus)
+   ============================================================ */
+async function renderCaixinhaCampo() {
+  const editavel = canWrite("caixinha_campo");
+  document.getElementById("topbar-actions").innerHTML = editavel ? `<button class="btn btn-primary" id="new-cxc-btn">+ Novo lançamento</button>` : "";
+  if (editavel) document.getElementById("new-cxc-btn").onclick = () => openCaixinhaCampoModal();
+
+  const { data: rows } = await supabase.from("caixinha_campo").select("*, contratos(nome)").order("data", { ascending: false }).limit(200);
+  const adiantado = (rows||[]).filter(r=>r.tipo==="adiantamento").reduce((s,r)=>s+Number(r.valor),0);
+  const gasto = (rows||[]).filter(r=>r.tipo==="gasto").reduce((s,r)=>s+Number(r.valor),0);
+  const content = document.getElementById("content");
+  content.innerHTML = `
+    <div class="grid-stats">
+      <div class="stat"><div class="num">${fmtMoney(adiantado - gasto)}</div><div class="label">Saldo do adiantamento</div></div>
+      <div class="stat"><div class="num" style="color:var(--moss-dark)">${fmtMoney(adiantado)}</div><div class="label">Total adiantado</div></div>
+      <div class="stat"><div class="num" style="color:var(--danger)">${fmtMoney(gasto)}</div><div class="label">Total gasto</div></div>
+    </div>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Data</th><th>Obra</th><th>Tipo</th><th>Descrição</th><th>Valor</th>${editavel ? "<th></th>" : ""}</tr></thead>
+        <tbody>
+          ${(rows||[]).map(r => `
+            <tr>
+              <td>${fmtDate(r.data)}</td>
+              <td>${escapeHtml(r.contratos?.nome || "—")}</td>
+              <td><span class="status-badge ${r.tipo==='adiantamento'?'status-aprovado':'status-rejeitado'}">${r.tipo}</span></td>
+              <td>${escapeHtml(r.descricao)}</td>
+              <td>${fmtMoney(r.valor)}</td>
+              ${editavel ? `<td><button class="btn btn-ghost edit-cxc" data-id="${r.id}">Editar</button></td>` : ""}
+            </tr>
+          `).join("") || `<tr><td colspan="6"><div class="empty-state">Nenhum lançamento ainda</div></td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  `;
+  if (editavel) content.querySelectorAll(".edit-cxc").forEach(btn => {
+    btn.onclick = async () => {
+      const { data: r } = await supabase.from("caixinha_campo").select("*").eq("id", btn.dataset.id).single();
+      openCaixinhaCampoModal(r);
+    };
+  });
+}
+
+function openCaixinhaCampoModal(row) {
+  const isEdit = !!row;
+  const options = cache.contratos.map(c => `<option value="${c.id}" ${row?.contrato_id===c.id?"selected":""}>${escapeHtml(c.nome)}</option>`).join("");
+  openModal(`
+    <h3>${isEdit ? "Editar lançamento" : "Novo lançamento — Caixinha de campo"}</h3>
+    <div class="field"><label>Obra</label><select id="cxc-obra"><option value="">—</option>${options}</select></div>
+    <div class="field"><label>Tipo</label>
+      <select id="cxc-tipo"><option value="adiantamento" ${row?.tipo==='adiantamento'?'selected':''}>Adiantamento recebido</option><option value="gasto" ${row?.tipo==='gasto'?'selected':''}>Gasto</option></select>
+    </div>
+    <div class="field"><label>Data</label><input type="date" id="cxc-data" value="${row?.data || new Date().toISOString().slice(0,10)}" /></div>
+    <div class="field"><label>Descrição</label><input id="cxc-desc" value="${row ? escapeHtml(row.descricao) : ""}" /></div>
+    <div class="field"><label>Valor (R$)</label><input type="number" step="0.01" id="cxc-valor" value="${row?.valor ?? ""}" /></div>
+    <div class="modal-actions">
+      ${isEdit ? `<button class="btn btn-danger-outline" id="cxc-del">Excluir</button>` : ""}
+      <button class="btn btn-ghost" id="cxc-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="cxc-save">Salvar</button>
+    </div>
+  `);
+  document.getElementById("cxc-cancel").onclick = closeModal;
+  document.getElementById("cxc-save").onclick = async () => {
+    const payload = {
+      contrato_id: document.getElementById("cxc-obra").value || null,
+      tipo: document.getElementById("cxc-tipo").value,
+      data: document.getElementById("cxc-data").value,
+      descricao: document.getElementById("cxc-desc").value.trim(),
+      valor: document.getElementById("cxc-valor").value || 0,
+      registrado_por: currentUser.id,
+    };
+    if (!payload.descricao || !payload.valor) { toast("Preencha descrição e valor"); return; }
+    if (isEdit) await supabase.from("caixinha_campo").update(payload).eq("id", row.id);
+    else await supabase.from("caixinha_campo").insert(payload);
+    await logAudit("financeiro", isEdit ? "editar" : "criar", "caixinha_campo", row?.id, payload);
+    closeModal(); toast("Lançamento salvo"); renderCaixinhaCampo();
+  };
+  if (isEdit) document.getElementById("cxc-del").onclick = async () => {
+    if (!confirm("Excluir este lançamento?")) return;
+    await supabase.from("caixinha_campo").delete().eq("id", row.id);
+    closeModal(); toast("Excluído"); renderCaixinhaCampo();
+  };
+}
+
+/* ============================================================
+   COMBUSTÍVEL — controle semanal por veículo (Itallo)
+   ============================================================ */
+async function renderCombustivel() {
+  const editavel = canWrite("combustivel");
+  document.getElementById("topbar-actions").innerHTML = editavel ? `<button class="btn btn-primary" id="new-comb-btn">+ Novo registro</button>` : "";
+  if (editavel) document.getElementById("new-comb-btn").onclick = () => openCombustivelModal();
+
+  const { data: rows } = await supabase.from("combustivel").select("*").order("semana_inicio", { ascending: false }).limit(200);
+  const totalSemanaAtual = (rows||[]).filter(r => {
+    const inicio = new Date(r.semana_inicio + "T00:00:00");
+    const hoje = new Date();
+    const diff = (hoje - inicio) / (1000*60*60*24);
+    return diff >= 0 && diff < 7;
+  }).reduce((s,r)=>s+Number(r.valor),0);
+  const content = document.getElementById("content");
+  content.innerHTML = `
+    <div class="grid-stats">
+      <div class="stat"><div class="num">${fmtMoney(totalSemanaAtual)}</div><div class="label">Gasto na semana atual</div></div>
+      <div class="stat"><div class="num">${(rows||[]).length}</div><div class="label">Registros no histórico</div></div>
+    </div>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Semana</th><th>Veículo</th><th>Litros</th><th>Km rodado</th><th>Valor</th>${editavel ? "<th></th>" : ""}</tr></thead>
+        <tbody>
+          ${(rows||[]).map(r => `
+            <tr>
+              <td>${fmtDate(r.semana_inicio)} – ${fmtDate(r.semana_fim)}</td>
+              <td>${escapeHtml(r.veiculo)}</td>
+              <td>${r.litros ?? "—"}</td>
+              <td>${r.km_rodado ?? "—"}</td>
+              <td>${fmtMoney(r.valor)}</td>
+              ${editavel ? `<td><button class="btn btn-ghost edit-comb" data-id="${r.id}">Editar</button></td>` : ""}
+            </tr>
+          `).join("") || `<tr><td colspan="6"><div class="empty-state">Nenhum registro ainda</div></td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  `;
+  if (editavel) content.querySelectorAll(".edit-comb").forEach(btn => {
+    btn.onclick = async () => {
+      const { data: r } = await supabase.from("combustivel").select("*").eq("id", btn.dataset.id).single();
+      openCombustivelModal(r);
+    };
+  });
+}
+
+function openCombustivelModal(row) {
+  const isEdit = !!row;
+  openModal(`
+    <h3>${isEdit ? "Editar registro" : "Novo registro — Combustível"}</h3>
+    <div class="field"><label>Veículo</label><input id="cb-veiculo" value="${row ? escapeHtml(row.veiculo) : ""}" placeholder="ex: caminhonete, moto..." /></div>
+    <div class="field"><label>Início da semana</label><input type="date" id="cb-ini" value="${row?.semana_inicio || new Date().toISOString().slice(0,10)}" /></div>
+    <div class="field"><label>Fim da semana</label><input type="date" id="cb-fim" value="${row?.semana_fim || ""}" /></div>
+    <div class="field"><label>Litros</label><input type="number" step="0.01" id="cb-litros" value="${row?.litros ?? ""}" /></div>
+    <div class="field"><label>Km rodado</label><input type="number" step="0.1" id="cb-km" value="${row?.km_rodado ?? ""}" /></div>
+    <div class="field"><label>Valor total (R$)</label><input type="number" step="0.01" id="cb-valor" value="${row?.valor ?? ""}" /></div>
+    <div class="modal-actions">
+      ${isEdit ? `<button class="btn btn-danger-outline" id="cb-del">Excluir</button>` : ""}
+      <button class="btn btn-ghost" id="cb-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="cb-save">Salvar</button>
+    </div>
+  `);
+  document.getElementById("cb-cancel").onclick = closeModal;
+  document.getElementById("cb-save").onclick = async () => {
+    const payload = {
+      veiculo: document.getElementById("cb-veiculo").value.trim(),
+      semana_inicio: document.getElementById("cb-ini").value,
+      semana_fim: document.getElementById("cb-fim").value,
+      litros: document.getElementById("cb-litros").value || null,
+      km_rodado: document.getElementById("cb-km").value || null,
+      valor: document.getElementById("cb-valor").value || 0,
+      registrado_por: currentUser.id,
+    };
+    if (!payload.veiculo || !payload.semana_fim || !payload.valor) { toast("Preencha veículo, fim da semana e valor"); return; }
+    if (isEdit) await supabase.from("combustivel").update(payload).eq("id", row.id);
+    else await supabase.from("combustivel").insert(payload);
+    await logAudit("financeiro", isEdit ? "editar" : "criar", "combustivel", row?.id, payload);
+    closeModal(); toast("Registro salvo"); renderCombustivel();
+  };
+  if (isEdit) document.getElementById("cb-del").onclick = async () => {
+    if (!confirm("Excluir este registro?")) return;
+    await supabase.from("combustivel").delete().eq("id", row.id);
+    closeModal(); toast("Excluído"); renderCombustivel();
+  };
+}
+
+/* ============================================================
+   AUDITORIA
+   ============================================================ */
+async function renderAuditoria() {
+  const { data: rows } = await supabase.from("audit_log").select("*, usuarios(nome)").order("criado_em", { ascending: false }).limit(150);
+  const content = document.getElementById("content");
+  content.innerHTML = `
+    <div class="panel">
+      <table>
+        <thead><tr><th>Quando</th><th>Usuário</th><th>Módulo</th><th>Ação</th><th>Entidade</th></tr></thead>
+        <tbody>
+          ${(rows||[]).map(r => `
+            <tr>
+              <td>${new Date(r.criado_em).toLocaleString("pt-BR")}</td>
+              <td>${escapeHtml(r.usuarios?.nome || "—")}</td>
+              <td>${escapeHtml(r.modulo)}</td>
+              <td>${escapeHtml(r.acao)}</td>
+              <td>${escapeHtml(r.entidade)}</td>
+            </tr>
+          `).join("") || `<tr><td colspan="5"><div class="empty-state">Sem atividade registrada ainda</div></td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+/* ============================================================
+   TABELA GENÉRICA DE STATUS (insumos/atividades)
+   ============================================================ */
+function renderStatusTable(rows, moduleName, columns, editFn, editavel) {
+  const content = document.getElementById("content");
+  content.innerHTML = `
+    <div class="panel">
+      <table>
+        <thead><tr>${columns.map(c => `<th>${c.h}</th>`).join("")}<th>Status</th>${editavel ? "<th></th>" : ""}</tr></thead>
+        <tbody>
+          ${(rows||[]).map(r => `
+            <tr data-id="${r.id}">
+              ${columns.map(c => `<td>${escapeHtml(String(c.f(r) ?? "—"))}</td>`).join("")}
+              <td><span class="status-badge status-${r.status}">${r.status}</span></td>
+              ${editavel ? `<td><button class="btn btn-ghost edit-row">Editar</button></td>` : ""}
+            </tr>
+          `).join("") || `<tr><td colspan="${columns.length + 2}"><div class="empty-state">Nenhum registro ainda</div></td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  `;
+  if (editavel) {
+    content.querySelectorAll(".edit-row").forEach(btn => {
+      btn.onclick = () => {
+        const id = btn.closest("tr").dataset.id;
+        const row = rows.find(r => r.id === id);
+        editFn(row);
+      };
+    });
+  }
+}
+</script>
+</body>
+</html>
