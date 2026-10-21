@@ -412,6 +412,7 @@ const PERMISSIONS = {
   admin:  { label: "Administrador",   views: ["dashboard","tarefas","pendencias","fotos","presenca","insumos","atividades","faturamento","trabalhadores","obras","caixa","caixinha_escritorio","caixinha_campo","combustivel","auditoria"], readOnly: [] },
   gestor: { label: "Gestão",          views: ["dashboard","tarefas","pendencias","fotos","presenca","insumos","atividades","faturamento","trabalhadores","obras","caixa","caixinha_escritorio","caixinha_campo","combustivel","auditoria"], readOnly: ["insumos","atividades","faturamento","caixinha_escritorio","caixinha_campo","combustivel"] },
   membro: { label: "Administrativo",  views: ["dashboard","tarefas","pendencias","fotos","presenca","insumos","atividades","faturamento","trabalhadores","obras","caixinha_escritorio","combustivel"], readOnly: ["faturamento","trabalhadores","obras"] },
+  almoxarife: { label: "Almoxarifado", views: ["dashboard","tarefas","pendencias","fotos","insumos","obras"], readOnly: ["obras"] },
   campo:  { label: "Campo",           views: ["dashboard","tarefas","pendencias","fotos","presenca","insumos","atividades","caixinha_campo"], readOnly: [] },
 };
 function perms() { return PERMISSIONS[currentUser?.papel] || PERMISSIONS.membro; }
@@ -503,7 +504,14 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
   const errEl = document.getElementById("login-error");
   errEl.textContent = "";
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) { errEl.textContent = "E-mail ou senha inválidos."; return; }
+  if (error) {
+    const m = (error.message || "").toLowerCase();
+    if (m.includes("email not confirmed")) errEl.textContent = "E-mail ainda não confirmado. No Supabase, confirme o usuário (Auto Confirm User).";
+    else if (m.includes("invalid login credentials")) errEl.textContent = "E-mail ou senha inválidos — ou esse e-mail não tem login criado em Authentication → Users.";
+    else if (m.includes("fetch") || m.includes("network") || !navigator.onLine) errEl.textContent = "Sem conexão com o servidor. Confira a internet.";
+    else errEl.textContent = "Não foi possível entrar: " + error.message;
+    return;
+  }
   await afterLogin(data.user);
 });
 
