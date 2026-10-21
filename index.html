@@ -199,6 +199,62 @@ textarea{width:100%;resize:vertical;min-height:70px;padding:9px 11px;border:1px 
 .menu-toggle{display:none;background:none;border:none;font-size:1.3rem;padding:4px 8px;}
 .toast{position:fixed;bottom:20px;right:20px;background:var(--ink);color:#fff;padding:11px 18px;border-radius:var(--radius-sm);font-size:0.85rem;box-shadow:var(--shadow);z-index:80;opacity:0;transform:translateY(8px);transition:all .2s;}
 .toast.show{opacity:1;transform:translateY(0);}
+/* toast no centro, pra não ficar atrás do botão da câmera */
+.toast{right:auto;left:50%;bottom:96px;transform:translate(-50%,8px);max-width:calc(100vw - 32px);text-align:center;}
+.toast.show{transform:translate(-50%,0);}
+
+.field select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius-sm);background:#fff;}
+.field label.check{display:flex;align-items:center;gap:8px;font-size:0.86rem;color:var(--ink);}
+.modal-actions{flex-wrap:wrap;}
+.modal-actions .btn-primary{width:auto;margin-top:0;}
+.modal.wide{max-width:920px;}
+.muted{color:var(--ink-soft);font-size:0.8rem;}
+.row-actions{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap;}
+.stat[data-go]{cursor:pointer;}
+.panel-scroll{overflow-x:auto;}
+.notice{background:var(--sun-tint);color:#5C3F08;border-radius:var(--radius-sm);padding:10px 14px;font-size:0.85rem;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.notice.ok{background:var(--moss-tint);color:var(--moss-dark);}
+.btn-small{padding:6px 10px;font-size:0.8rem;}
+.btn-notif{width:100%;margin-bottom:8px;color:#EFEDE2;border-color:rgba(255,255,255,0.25);}
+.btn-notif:hover{background:rgba(255,255,255,0.08);}
+
+/* ---------- FOTOS DE CAMPO ---------- */
+.fab{
+  position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom));width:62px;height:62px;border-radius:50%;
+  background:var(--clay);color:#fff;border:none;box-shadow:0 6px 20px rgba(0,0,0,0.28);
+  display:none;align-items:center;justify-content:center;z-index:45;
+}
+.fab svg{width:28px;height:28px;}
+.fab:active{transform:scale(0.95);}
+body.logado .fab{display:flex;}
+.fab .badge{
+  position:absolute;top:-3px;right:-3px;min-width:22px;height:22px;padding:0 6px;border-radius:11px;
+  background:var(--danger);color:#fff;font-size:0.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid var(--canvas);
+}
+.fab .badge[hidden]{display:none;}
+.field input[type=checkbox]{width:18px;height:18px;padding:0;flex:0 0 auto;accent-color:var(--moss);}
+.field label:has(> input[type=checkbox]){display:flex;align-items:center;gap:8px;color:var(--ink);font-size:0.86rem;}
+#topbar-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
+#topbar-actions .btn-primary{width:auto;margin-top:0;}
+.modal-bg.open ~ .toast{bottom:auto;top:20px;}
+.acoes-foto{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:20px;}
+.acoes-foto .btn{width:100%;margin:0;padding:12px;}
+.acoes-foto .btn-primary{grid-column:1 / -1;order:-1;font-size:0.95rem;padding:14px;}
+.chips{display:flex;flex-wrap:wrap;gap:6px;}
+.chip{padding:8px 13px;border:1px solid var(--line);border-radius:20px;background:#fff;font-size:0.84rem;color:var(--ink);}
+.chip.on{background:var(--moss);border-color:var(--moss);color:#fff;font-weight:600;}
+.foto-preview{display:flex;gap:6px;overflow-x:auto;margin-bottom:14px;}
+.foto-preview img{height:150px;border-radius:var(--radius-sm);object-fit:cover;flex:0 0 auto;max-width:100%;}
+.foto-dia{margin-bottom:22px;}
+.foto-dia h4{margin:0 0 10px;font-size:0.85rem;font-weight:600;color:var(--ink-soft);}
+.foto-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;}
+.foto-thumb{position:relative;aspect-ratio:1;border-radius:var(--radius-sm);overflow:hidden;background:#E3E0D3;cursor:pointer;border:none;padding:0;}
+.foto-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.foto-thumb .tag{position:absolute;left:6px;top:6px;font-size:0.66rem;background:rgba(0,0,0,0.6);color:#fff;padding:2px 7px;border-radius:10px;max-width:calc(100% - 12px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.foto-thumb.pendente::after{content:"aguardando envio";position:absolute;inset:auto 0 0 0;background:rgba(201,138,30,0.9);color:#fff;font-size:0.66rem;text-align:center;padding:3px;}
+.lightbox{display:grid;grid-template-columns:1.6fr 1fr;gap:18px;}
+.lightbox img{width:100%;border-radius:var(--radius-sm);background:#E3E0D3;min-height:200px;}
+@media (max-width:700px){ #ft-camera-btn{display:none;} .topbar{align-items:flex-start;gap:10px;} .lightbox{grid-template-columns:1fr;} .content{padding:18px 14px 110px;} .topbar{padding:14px;} }
 </style>
 </head>
 <body>
@@ -237,10 +293,12 @@ textarea{width:100%;resize:vertical;min-height:70px;padding:9px 11px;border:1px 
       <div class="nav-group">
         <div class="nav-label">TAREFAS</div>
         <div class="nav-item" data-view="tarefas"><span class="nav-icon"></span> Quadro</div>
+        <div class="nav-item" data-view="pendencias"><span class="nav-icon"></span> Pendências</div>
       </div>
 
       <div class="nav-group">
         <div class="nav-label">MEDIÇÕES</div>
+        <div class="nav-item" data-view="fotos"><span class="nav-icon"></span> Fotos de campo</div>
         <div class="nav-item" data-view="presenca"><span class="nav-icon"></span> Presença</div>
         <div class="nav-item" data-view="insumos"><span class="nav-icon"></span> Insumos</div>
         <div class="nav-item" data-view="atividades"><span class="nav-icon"></span> Atividades</div>
@@ -266,6 +324,7 @@ textarea{width:100%;resize:vertical;min-height:70px;padding:9px 11px;border:1px 
         <div class="user-chip"><div class="avatar" id="user-avatar">?</div>
           <div><div id="user-name">—</div><div id="user-role" style="font-size:0.72rem;color:#A9BBA1;"></div></div>
         </div>
+        <button class="btn btn-ghost btn-notif" id="notif-btn" style="display:none;">Ativar notificações</button>
         <button class="btn btn-ghost" id="logout-btn" style="width:100%;">Sair</button>
       </div>
     </aside>
@@ -286,6 +345,14 @@ textarea{width:100%;resize:vertical;min-height:70px;padding:9px 11px;border:1px 
 
 <div class="modal-bg" id="modal-bg"><div class="modal" id="modal-body"></div></div>
 <div class="toast" id="toast"></div>
+
+<!-- Captura rápida de fotos: um toque abre a câmera direto -->
+<input type="file" id="foto-camera" accept="image/*" capture="environment" hidden />
+<input type="file" id="foto-galeria" accept="image/*" multiple hidden />
+<button class="fab" id="fab-foto" title="Tirar foto de campo" aria-label="Tirar foto de campo">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+  <span class="badge" id="fab-badge" hidden>0</span>
+</button>
 
 <script>
 /* ============================================================
@@ -314,6 +381,8 @@ const ICONS = {
   caixinha_escritorio: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><circle cx="15" cy="15" r="6" stroke-dasharray="0"/><path d="M9.5 6.5c-.5 1-.5 3 0 4"/></svg>`,
   caixinha_campo: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15l2-7a2 2 0 012-1.5h10A2 2 0 0119 8.5L21 15"/><path d="M3 15h18v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3z"/><path d="M9 15V9"/></svg>`,
   combustivel: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22V6a2 2 0 012-2h6a2 2 0 012 2v16"/><path d="M3 22h10"/><path d="M13 9h2l3 3v6a1.5 1.5 0 01-3 0"/><path d="M6 6v4h4V6"/></svg>`,
+  pendencias: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22V4"/><path d="M4 4h12l-2 4 2 4H4"/></svg>`,
+  fotos: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>`,
   auditoria: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 5v7h7"/><path d="M12 8v4l3 2"/></svg>`,
 };
 document.querySelectorAll(".nav-item").forEach(el => {
@@ -340,10 +409,10 @@ const STATUS_TAREFA = [
    readOnly: dentro das telas que aparecem, em quais o papel só consulta
              (sem botão de novo/editar/excluir) */
 const PERMISSIONS = {
-  admin:  { label: "Administrador",   views: ["dashboard","tarefas","presenca","insumos","atividades","faturamento","trabalhadores","obras","caixa","caixinha_escritorio","caixinha_campo","combustivel","auditoria"], readOnly: [] },
-  gestor: { label: "Gestão",          views: ["dashboard","tarefas","presenca","insumos","atividades","faturamento","trabalhadores","obras","caixa","caixinha_escritorio","caixinha_campo","combustivel","auditoria"], readOnly: ["insumos","atividades","faturamento","caixinha_escritorio","caixinha_campo","combustivel"] },
-  membro: { label: "Administrativo",  views: ["dashboard","tarefas","presenca","insumos","atividades","faturamento","trabalhadores","obras","caixinha_escritorio","combustivel"], readOnly: ["faturamento","trabalhadores","obras"] },
-  campo:  { label: "Campo",           views: ["dashboard","tarefas","presenca","insumos","atividades","caixinha_campo"], readOnly: [] },
+  admin:  { label: "Administrador",   views: ["dashboard","tarefas","pendencias","fotos","presenca","insumos","atividades","faturamento","trabalhadores","obras","caixa","caixinha_escritorio","caixinha_campo","combustivel","auditoria"], readOnly: [] },
+  gestor: { label: "Gestão",          views: ["dashboard","tarefas","pendencias","fotos","presenca","insumos","atividades","faturamento","trabalhadores","obras","caixa","caixinha_escritorio","caixinha_campo","combustivel","auditoria"], readOnly: ["insumos","atividades","faturamento","caixinha_escritorio","caixinha_campo","combustivel"] },
+  membro: { label: "Administrativo",  views: ["dashboard","tarefas","pendencias","fotos","presenca","insumos","atividades","faturamento","trabalhadores","obras","caixinha_escritorio","combustivel"], readOnly: ["faturamento","trabalhadores","obras"] },
+  campo:  { label: "Campo",           views: ["dashboard","tarefas","pendencias","fotos","presenca","insumos","atividades","caixinha_campo"], readOnly: [] },
 };
 function perms() { return PERMISSIONS[currentUser?.papel] || PERMISSIONS.membro; }
 function canView(view) { return perms().views.includes(view); }
@@ -382,12 +451,43 @@ async function logAudit(modulo, acao, entidade, entidade_id, detalhes = {}) {
     });
   } catch (e) { console.warn("audit log falhou", e); }
 }
-function openModal(html) {
-  document.getElementById("modal-body").innerHTML = html;
+// data de hoje no fuso do aparelho (toISOString usa UTC e depois das 21h já vira o dia seguinte)
+function hojeISO(d = new Date()) {
+  const z = n => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`;
+}
+function novoId() {
+  if (crypto.randomUUID) return crypto.randomUUID();
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0; return (c === "x" ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+// guarda pequena no aparelho (preferências e cópia offline dos cadastros)
+function lerLocal(chave, padrao = null) {
+  try { const v = localStorage.getItem("hub:" + chave); return v ? JSON.parse(v) : padrao; } catch { return padrao; }
+}
+function gravarLocal(chave, valor) {
+  try { localStorage.setItem("hub:" + chave, JSON.stringify(valor)); } catch {}
+}
+// exclusão padrão: confere erro, avisa quando há registros ligados e grava na auditoria
+async function excluirRegistro(tabela, id, modulo, entidade, detalhes = {}) {
+  const { error } = await supabase.from(tabela).delete().eq("id", id);
+  if (error) {
+    toast(error.code === "23503" ? "Não dá pra excluir: há outros registros ligados a este" : "Erro ao excluir: " + error.message);
+    return false;
+  }
+  await logAudit(modulo, "excluir", entidade, id, detalhes);
+  return true;
+}
+function openModal(html, opts = {}) {
+  const body = document.getElementById("modal-body");
+  body.classList.toggle("wide", !!opts.wide);
+  body.innerHTML = html;
   document.getElementById("modal-bg").classList.add("open");
 }
 function closeModal() {
   document.getElementById("modal-bg").classList.remove("open");
+  document.getElementById("modal-body").dispatchEvent(new Event("modal-fechado"));
 }
 document.getElementById("modal-bg").addEventListener("click", (e) => {
   if (e.target.id === "modal-bg") closeModal();
@@ -413,22 +513,35 @@ document.getElementById("logout-btn").addEventListener("click", async () => {
 });
 
 async function afterLogin(authUser) {
-  let { data: perfil } = await supabase.from("usuarios").select("*").eq("auth_id", authUser.id).maybeSingle();
-  if (!perfil) {
-    // pode já existir um pré-cadastro pelo e-mail (equipe cadastrada antes do 1º login) — linka nele
-    const { data: preCadastro } = await supabase.from("usuarios").select("*").eq("email", authUser.email).maybeSingle();
-    if (preCadastro) {
-      const { data: linkado } = await supabase.from("usuarios")
-        .update({ auth_id: authUser.id }).eq("id", preCadastro.id).select().single();
-      perfil = linkado;
-    } else {
-      const { data: novoPerfil } = await supabase.from("usuarios")
-        .insert({ auth_id: authUser.id, email: authUser.email, nome: authUser.email.split("@")[0], papel: "membro" })
-        .select().single();
-      perfil = novoPerfil;
+  let perfil = null;
+  const perfilLocal = lerLocal("perfil");
+  if (!navigator.onLine && perfilLocal?.auth_id === authUser.id) {
+    perfil = perfilLocal; // sem sinal: entra com a cópia guardada no aparelho
+  } else {
+    ({ data: perfil } = await supabase.from("usuarios").select("*").eq("auth_id", authUser.id).maybeSingle());
+    if (!perfil) {
+      // pode já existir um pré-cadastro pelo e-mail (equipe cadastrada antes do 1º login) — linka nele
+      const { data: preCadastro } = await supabase.from("usuarios").select("*").eq("email", authUser.email).maybeSingle();
+      if (preCadastro) {
+        const { data: linkado } = await supabase.from("usuarios")
+          .update({ auth_id: authUser.id }).eq("id", preCadastro.id).select().single();
+        perfil = linkado;
+      } else {
+        const { data: novoPerfil } = await supabase.from("usuarios")
+          .insert({ auth_id: authUser.id, email: authUser.email, nome: authUser.email.split("@")[0], papel: "membro" })
+          .select().single();
+        perfil = novoPerfil;
+      }
     }
+    if (!perfil && perfilLocal?.auth_id === authUser.id) perfil = perfilLocal;
+  }
+  if (!perfil) {
+    document.getElementById("login-error").textContent = "Não consegui carregar seu perfil. Confira a internet e tente de novo.";
+    return;
   }
   currentUser = perfil;
+  gravarLocal("perfil", perfil);
+  document.body.classList.add("logado");
   document.getElementById("login-screen").style.display = "none";
   document.getElementById("app").style.display = "block";
   document.getElementById("user-name").textContent = currentUser.nome;
@@ -437,14 +550,28 @@ async function afterLogin(authUser) {
   document.querySelectorAll(".nav-item").forEach(el => {
     el.style.display = canView(el.dataset.view) ? "" : "none";
   });
+  document.getElementById("fab-foto").style.display = canWrite("fotos") ? "" : "none";
   await loadReferenceData();
-  setView(canView("dashboard") ? "dashboard" : perms().views[0]);
-  setupPushNotifications();
+
+  // tela inicial: a do link (ex.: notificação abre ?view=pendencias); sem sinal, vai direto pras fotos
+  const pedida = new URLSearchParams(location.search).get("view");
+  let inicial = canView("dashboard") ? "dashboard" : perms().views[0];
+  if (pedida && VIEW_META[pedida] && canView(pedida)) inicial = pedida;
+  if (!navigator.onLine && canView("fotos")) inicial = "fotos";
+  setView(inicial);
+
+  setupPushNotifications(false);
+  enviarFilaFotos();
 }
 
 /* ============================================================
-   PUSH NOTIFICATIONS — alerta no celular ao ser atribuído a uma tarefa
+   SERVICE WORKER + PUSH NOTIFICATIONS
    ============================================================ */
+// registra já no carregamento: deixa o app abrir sem sinal e recebe as notificações
+const swRegistro = ("serviceWorker" in navigator)
+  ? navigator.serviceWorker.register("sw.js").catch(e => { console.warn("Service worker não registrado:", e); return null; })
+  : Promise.resolve(null);
+
 function urlBase64ToUint8Array(base64String) {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
@@ -452,15 +579,30 @@ function urlBase64ToUint8Array(base64String) {
   return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
 }
 
-async function setupPushNotifications() {
-  if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
-  if (VAPID_PUBLIC_KEY.startsWith("SUA-")) return; // ainda não configurado
-  try {
-    const reg = await navigator.serviceWorker.register("sw.js");
-    let permission = Notification.permission;
-    if (permission === "default") permission = await Notification.requestPermission();
-    if (permission !== "granted") return;
+function pushSuportado() {
+  return "serviceWorker" in navigator && "PushManager" in window && "Notification" in window && !VAPID_PUBLIC_KEY.startsWith("SUA-");
+}
 
+function atualizarBotaoNotif() {
+  const btn = document.getElementById("notif-btn");
+  btn.style.display = pushSuportado() && Notification.permission === "default" ? "" : "none";
+}
+document.getElementById("notif-btn").addEventListener("click", () => setupPushNotifications(true));
+
+// pedirPermissao=true só quando a pessoa toca em "Ativar notificações" (iPhone exige o toque)
+async function setupPushNotifications(pedirPermissao) {
+  if (!pushSuportado() || !currentUser) return;
+  try {
+    let permission = Notification.permission;
+    if (permission === "default" && pedirPermissao) permission = await Notification.requestPermission();
+    atualizarBotaoNotif();
+    if (permission !== "granted") {
+      if (pedirPermissao && permission === "denied") toast("Notificações bloqueadas — libere nas configurações do navegador");
+      return;
+    }
+    const reg = await swRegistro;
+    if (!reg) return;
+    await navigator.serviceWorker.ready;
     let sub = await reg.pushManager.getSubscription();
     if (!sub) {
       sub = await reg.pushManager.subscribe({
@@ -469,35 +611,49 @@ async function setupPushNotifications() {
       });
     }
     const json = sub.toJSON();
-    await supabase.from("push_subscriptions").upsert({
+    const { error } = await supabase.from("push_subscriptions").upsert({
       usuario_id: currentUser.id,
       endpoint: json.endpoint,
       p256dh: json.keys.p256dh,
       auth: json.keys.auth,
     }, { onConflict: "endpoint" });
+    if (error) throw error;
+    if (pedirPermissao) toast("Notificações ativadas neste aparelho");
   } catch (e) {
     console.warn("Push notification não configurada:", e);
+    if (pedirPermissao) toast("Não consegui ativar as notificações: " + (e.message || e));
   }
 }
 
-async function notifyTaskAssignment(responsavel_id, titulo, tarefa_id) {
-  if (!responsavel_id) return;
+// avisa alguém no celular (não avisa a si mesmo)
+async function enviarPush(usuario_id, { titulo, corpo, url, tarefa_id } = {}) {
+  if (!usuario_id || usuario_id === currentUser?.id) return;
   try {
     await supabase.functions.invoke("send-task-notification", {
-      body: { responsavel_id, titulo, tarefa_id },
+      body: { responsavel_id: usuario_id, titulo, corpo, url, tarefa_id },
     });
   } catch (e) {
     console.warn("Notificação não enviada:", e);
   }
+}
+function notifyTaskAssignment(responsavel_id, titulo, tarefa_id) {
+  return enviarPush(responsavel_id, {
+    titulo: "Nova tarefa pra você", corpo: titulo, url: "./?view=tarefas", tarefa_id,
+  });
 }
 
 async function checkSession() {
   const { data } = await supabase.auth.getSession();
   if (data.session) await afterLogin(data.session.user);
 }
-checkSession();
 
 async function loadReferenceData() {
+  if (!navigator.onLine) {
+    const c = lerLocal("cadastros", {});
+    cache.usuarios = c.usuarios || []; cache.contratos = c.contratos || [];
+    cache.trabalhadores = c.trabalhadores || []; cache.quadroId = c.quadroId || null;
+    return;
+  }
   const [{ data: usuarios }, { data: contratos }, { data: trabalhadores }, { data: quadros }] = await Promise.all([
     supabase.from("usuarios").select("*").order("nome"),
     supabase.from("contratos").select("*").order("nome"),
@@ -512,8 +668,9 @@ async function loadReferenceData() {
   } else {
     const { data: novoQuadro } = await supabase.from("quadros")
       .insert({ nome: "Quadro geral", criado_por: currentUser.id }).select().single();
-    cache.quadroId = novoQuadro.id;
+    cache.quadroId = novoQuadro?.id || null;
   }
+  gravarLocal("cadastros", cache);
 }
 
 /* ============================================================
@@ -529,6 +686,8 @@ document.getElementById("menu-toggle").addEventListener("click", () => {
 const VIEW_META = {
   dashboard: ["Dashboard", "Visão geral do que está acontecendo"],
   tarefas: ["Quadro de tarefas", "Arraste os cartões entre as colunas"],
+  pendencias: ["Pendências", "O que está travado e precisa de alguém pra resolver"],
+  fotos: ["Fotos de campo", "Registro fotográfico por obra — base para a medição"],
   presenca: ["Presença", "Registro diário de presença da equipe de campo"],
   insumos: ["Insumos", "Materiais e compras por contrato"],
   atividades: ["Atividades", "Atividades executadas em campo"],
@@ -556,6 +715,8 @@ async function setView(view) {
   try {
     if (view === "dashboard") await renderDashboard();
     else if (view === "tarefas") await renderTarefas();
+    else if (view === "pendencias") await renderPendencias();
+    else if (view === "fotos") await renderFotos();
     else if (view === "presenca") await renderPresenca();
     else if (view === "insumos") await renderInsumos();
     else if (view === "atividades") await renderAtividades();
@@ -578,27 +739,33 @@ async function setView(view) {
    ============================================================ */
 async function renderDashboard() {
   const content = document.getElementById("content");
-  const [{ data: tarefas }, { data: presencas }, { data: pendencias }, { data: insumos }] = await Promise.all([
+  const hoje = new Date();
+  const inicioMes = hojeISO(new Date(hoje.getFullYear(), hoje.getMonth(), 1));
+  const [{ data: tarefas }, { data: presencas }, { data: pendencias }, { data: insumos }, { count: fotosMes }] = await Promise.all([
     supabase.from("tarefas").select("*"),
     supabase.from("presencas").select("*").order("data", { ascending: false }).limit(200),
     supabase.from("pendencias").select("*").eq("resolvida", false),
     supabase.from("insumos").select("*").eq("status", "pendente"),
+    supabase.from("fotos_campo").select("id", { count: "exact", head: true }).gte("data", inicioMes),
   ]);
   const abertas = (tarefas || []).filter(t => t.status !== "concluida").length;
   const atrasadas = (tarefas || []).filter(t => t.status !== "concluida" && isLate(t.prazo)).length;
+  const go = v => canView(v) ? `data-go="${v}"` : "";
 
   content.innerHTML = `
     <div class="grid-stats">
-      <div class="stat"><div class="num">${abertas}</div><div class="label">Tarefas abertas</div></div>
-      <div class="stat"><div class="num">${atrasadas}</div><div class="label">Tarefas atrasadas</div></div>
-      <div class="stat"><div class="num">${(pendencias||[]).length}</div><div class="label">Pendências em aberto</div></div>
-      <div class="stat"><div class="num">${(insumos||[]).length}</div><div class="label">Insumos p/ aprovar</div></div>
+      <div class="stat" ${go("tarefas")}><div class="num">${abertas}</div><div class="label">Tarefas abertas</div></div>
+      <div class="stat" ${go("tarefas")}><div class="num" style="${atrasadas ? "color:var(--danger)" : ""}">${atrasadas}</div><div class="label">Tarefas atrasadas</div></div>
+      <div class="stat" ${go("pendencias")}><div class="num">${(pendencias||[]).length}</div><div class="label">Pendências em aberto</div></div>
+      <div class="stat" ${go("insumos")}><div class="num">${(insumos||[]).length}</div><div class="label">Insumos p/ aprovar</div></div>
+      <div class="stat" ${go("fotos")}><div class="num">${fotosMes || 0}</div><div class="label">Fotos de campo no mês</div></div>
     </div>
     <div class="two-col">
       <div class="chart-wrap"><canvas id="chart-presenca" height="200"></canvas></div>
       <div class="chart-wrap"><canvas id="chart-tarefas" height="200"></canvas></div>
     </div>
   `;
+  content.querySelectorAll(".stat[data-go]").forEach(el => el.onclick = () => setView(el.dataset.go));
 
   // gráfico de presença nos últimos 14 dias
   const byDay = {};
@@ -729,6 +896,9 @@ function openTaskModal(task) {
     if (isEdit) {
       await supabase.from("tarefas").update(payload).eq("id", task.id);
       await logAudit("tarefas", "editar", "tarefa", task.id, payload);
+      if (payload.responsavel_id && payload.responsavel_id !== task.responsavel_id) {
+        notifyTaskAssignment(payload.responsavel_id, payload.titulo, task.id);
+      }
     } else {
       payload.quadro_id = cache.quadroId;
       payload.criado_por = currentUser.id;
@@ -752,8 +922,9 @@ function openTaskModal(task) {
    MÓDULO MEDIÇÕES — PRESENÇA
    ============================================================ */
 async function renderPresenca() {
-  document.getElementById("topbar-actions").innerHTML = `<button class="btn btn-primary" id="new-presenca-btn">+ Registrar presença</button>`;
-  document.getElementById("new-presenca-btn").onclick = () => openPresencaModal();
+  const editavel = canWrite("presenca");
+  document.getElementById("topbar-actions").innerHTML = editavel ? `<button class="btn btn-primary" id="new-presenca-btn">+ Registrar presença</button>` : "";
+  if (editavel) document.getElementById("new-presenca-btn").onclick = () => openPresencaModal();
 
   const { data: rows } = await supabase.from("presencas").select("*, trabalhadores(nome)").order("data", { ascending: false }).limit(100);
   const content = document.getElementById("content");
@@ -768,7 +939,7 @@ async function renderPresenca() {
               <td>${escapeHtml(r.trabalhadores?.nome || "—")}</td>
               <td><span class="status-badge ${r.presente ? 'status-aprovado' : 'status-rejeitado'}">${r.presente ? "Presente" : "Ausente"}</span></td>
               <td>${escapeHtml(r.observacao || "—")}</td>
-              <td><button class="btn btn-ghost edit-presenca" data-id="${r.id}">Editar</button></td>
+              <td>${editavel ? `<button class="btn btn-ghost edit-presenca" data-id="${r.id}">Editar</button>` : ""}</td>
             </tr>
           `).join("") || `<tr><td colspan="5"><div class="empty-state">Nenhum registro ainda</div></td></tr>`}
         </tbody>
@@ -789,10 +960,11 @@ function openPresencaModal(row) {
   openModal(`
     <h3>${isEdit ? "Editar presença" : "Registrar presença"}</h3>
     <div class="field"><label>Trabalhador</label><select id="pr-trab">${options}</select></div>
-    <div class="field"><label>Data</label><input type="date" id="pr-data" value="${row?.data || new Date().toISOString().slice(0,10)}" /></div>
+    <div class="field"><label>Data</label><input type="date" id="pr-data" value="${row?.data || hojeISO()}" /></div>
     <div class="field"><label><input type="checkbox" id="pr-presente" ${row ? (row.presente?"checked":"") : "checked"} /> Presente</label></div>
     <div class="field"><label>Observação</label><textarea id="pr-obs">${row ? escapeHtml(row.observacao || "") : ""}</textarea></div>
     <div class="modal-actions">
+      ${isEdit ? `<button class="btn btn-danger-outline" id="pr-del">Excluir</button>` : ""}
       <button class="btn btn-ghost" id="pr-cancel">Cancelar</button>
       <button class="btn btn-primary" id="pr-save">Salvar</button>
     </div>
@@ -810,6 +982,12 @@ function openPresencaModal(row) {
     else await supabase.from("presencas").upsert(payload, { onConflict: "trabalhador_id,data" });
     await logAudit("medicoes", isEdit ? "editar" : "criar", "presenca", row?.id, payload);
     closeModal(); toast("Presença salva"); renderPresenca();
+  };
+  if (isEdit) document.getElementById("pr-del").onclick = async () => {
+    const nome = cache.trabalhadores.find(t => t.id === row.trabalhador_id)?.nome || "trabalhador";
+    if (!confirm(`Excluir a presença de ${nome} em ${fmtDate(row.data)}?`)) return;
+    if (!await excluirRegistro("presencas", row.id, "medicoes", "presenca", { trabalhador: nome, data: row.data })) return;
+    closeModal(); toast("Presença excluída"); renderPresenca();
   };
 }
 
@@ -838,9 +1016,9 @@ function openInsumoModal(row) {
     <h3>${isEdit ? "Editar insumo" : "Novo insumo"}</h3>
     <div class="field"><label>Contrato</label><select id="in-contrato"><option value="">—</option>${options}</select></div>
     <div class="field"><label>Descrição</label><input id="in-desc" value="${row ? escapeHtml(row.descricao) : ""}" /></div>
-    <div class="field"><label>Data</label><input type="date" id="in-data" value="${row?.data || new Date().toISOString().slice(0,10)}" /></div>
+    <div class="field"><label>Data</label><input type="date" id="in-data" value="${row?.data || hojeISO()}" /></div>
     <div class="field"><label>Quantidade</label><input type="number" step="0.01" id="in-qtd" value="${row?.quantidade ?? ""}" /></div>
-    <div class="field"><label>Unidade</label><input id="in-unid" value="${row?.unidade || ""}" /></div>
+    <div class="field"><label>Unidade</label><input id="in-unid" value="${escapeHtml(row?.unidade || "")}" /></div>
     <div class="field"><label>Valor total (R$)</label><input type="number" step="0.01" id="in-valor" value="${row?.valor_total ?? ""}" /></div>
     <div class="field"><label>Status</label>
       <select id="in-status">${["pendente","aprovado","rejeitado"].map(s=>`<option value="${s}" ${row?.status===s?"selected":""}>${s}</option>`).join("")}</select>
@@ -871,7 +1049,7 @@ function openInsumoModal(row) {
   };
   if (isEdit) document.getElementById("in-del").onclick = async () => {
     if (!confirm("Excluir este insumo?")) return;
-    await supabase.from("insumos").delete().eq("id", row.id);
+    if (!await excluirRegistro("insumos", row.id, "medicoes", "insumo", row)) return;
     closeModal(); toast("Excluído"); renderInsumos();
   };
 }
@@ -899,7 +1077,7 @@ function openAtividadeModal(row) {
     <h3>${isEdit ? "Editar atividade" : "Nova atividade"}</h3>
     <div class="field"><label>Contrato</label><select id="at-contrato"><option value="">—</option>${options}</select></div>
     <div class="field"><label>Descrição</label><textarea id="at-desc">${row ? escapeHtml(row.descricao) : ""}</textarea></div>
-    <div class="field"><label>Data</label><input type="date" id="at-data" value="${row?.data || new Date().toISOString().slice(0,10)}" /></div>
+    <div class="field"><label>Data</label><input type="date" id="at-data" value="${row?.data || hojeISO()}" /></div>
     <div class="field"><label>Status</label>
       <select id="at-status">${["pendente","aprovado","rejeitado"].map(s=>`<option value="${s}" ${row?.status===s?"selected":""}>${s}</option>`).join("")}</select>
     </div>
@@ -926,7 +1104,7 @@ function openAtividadeModal(row) {
   };
   if (isEdit) document.getElementById("at-del").onclick = async () => {
     if (!confirm("Excluir esta atividade?")) return;
-    await supabase.from("atividades").delete().eq("id", row.id);
+    if (!await excluirRegistro("atividades", row.id, "medicoes", "atividade", row)) return;
     closeModal(); toast("Excluída"); renderAtividades();
   };
 }
@@ -944,7 +1122,7 @@ async function renderFaturamento() {
   content.innerHTML = `
     <div class="panel">
       <table>
-        <thead><tr><th>Contrato</th><th>Período</th><th>Valor</th><th>Status</th>${editavel ? "<th></th>" : ""}</tr></thead>
+        <thead><tr><th>Contrato</th><th>Período</th><th>Valor</th><th>Status</th><th></th></tr></thead>
         <tbody>
           ${(rows||[]).map(r => `
             <tr>
@@ -952,13 +1130,19 @@ async function renderFaturamento() {
               <td>${fmtDate(r.periodo_inicio)} – ${fmtDate(r.periodo_fim)}</td>
               <td>${fmtMoney(r.valor_total)}</td>
               <td><span class="status-badge status-${r.status}">${r.status}</span></td>
-              ${editavel ? `<td><button class="btn btn-ghost edit-fat" data-id="${r.id}">Editar</button></td>` : ""}
+              <td><div class="row-actions">
+                ${canView("fotos") && r.contrato_id ? `<button class="btn btn-ghost fotos-fat" data-contrato="${r.contrato_id}" data-ini="${r.periodo_inicio || ""}" data-fim="${r.periodo_fim || ""}">Fotos</button>` : ""}
+                ${editavel ? `<button class="btn btn-ghost edit-fat" data-id="${r.id}">Editar</button>` : ""}
+              </div></td>
             </tr>
           `).join("") || `<tr><td colspan="5"><div class="empty-state">Nenhum período cadastrado</div></td></tr>`}
         </tbody>
       </table>
     </div>
   `;
+  content.querySelectorAll(".fotos-fat").forEach(btn => {
+    btn.onclick = () => abrirFotosDoPeriodo(btn.dataset.contrato, btn.dataset.ini, btn.dataset.fim);
+  });
   if (editavel) content.querySelectorAll(".edit-fat").forEach(btn => {
     btn.onclick = async () => {
       const { data: r } = await supabase.from("faturamentos").select("*").eq("id", btn.dataset.id).single();
@@ -973,13 +1157,14 @@ function openFaturamentoModal(row) {
   openModal(`
     <h3>${isEdit ? "Editar período" : "Novo período de faturamento"}</h3>
     <div class="field"><label>Contrato</label><select id="fa-contrato"><option value="">—</option>${options}</select></div>
-    <div class="field"><label>Início</label><input type="date" id="fa-ini" value="${row?.periodo_inicio || ""}" /></div>
-    <div class="field"><label>Fim</label><input type="date" id="fa-fim" value="${row?.periodo_fim || ""}" /></div>
+    <div class="field"><label>Início</label><input type="date" id="fa-ini" value="${escapeHtml(row?.periodo_inicio || "")}" /></div>
+    <div class="field"><label>Fim</label><input type="date" id="fa-fim" value="${escapeHtml(row?.periodo_fim || "")}" /></div>
     <div class="field"><label>Valor total (R$)</label><input type="number" step="0.01" id="fa-valor" value="${row?.valor_total ?? ""}" /></div>
     <div class="field"><label>Status</label>
       <select id="fa-status">${["aberto","fechado","enviado","pago"].map(s=>`<option value="${s}" ${row?.status===s?"selected":""}>${s}</option>`).join("")}</select>
     </div>
     <div class="modal-actions">
+      ${isEdit ? `<button class="btn btn-danger-outline" id="fa-del">Excluir</button>` : ""}
       <button class="btn btn-ghost" id="fa-cancel">Cancelar</button>
       <button class="btn btn-primary" id="fa-save">Salvar</button>
     </div>
@@ -997,6 +1182,11 @@ function openFaturamentoModal(row) {
     else await supabase.from("faturamentos").insert(payload);
     await logAudit("medicoes", isEdit ? "editar" : "criar", "faturamento", row?.id, payload);
     closeModal(); toast("Período salvo"); renderFaturamento();
+  };
+  if (isEdit) document.getElementById("fa-del").onclick = async () => {
+    if (!confirm(`Excluir o período ${fmtDate(row.periodo_inicio)} – ${fmtDate(row.periodo_fim)}?`)) return;
+    if (!await excluirRegistro("faturamentos", row.id, "medicoes", "faturamento", { periodo_inicio: row.periodo_inicio, periodo_fim: row.periodo_fim, valor_total: row.valor_total })) return;
+    closeModal(); toast("Período excluído"); renderFaturamento();
   };
 }
 
@@ -1042,7 +1232,7 @@ function openTrabalhadorModal(row) {
   openModal(`
     <h3>${isEdit ? "Editar trabalhador" : "Novo trabalhador"}</h3>
     <div class="field"><label>Nome</label><input id="tr-nome" value="${row ? escapeHtml(row.nome) : ""}" /></div>
-    <div class="field"><label>Função</label><input id="tr-funcao" value="${row?.funcao || ""}" /></div>
+    <div class="field"><label>Função</label><input id="tr-funcao" value="${escapeHtml(row?.funcao || "")}" /></div>
     <div class="field"><label>Contrato</label><select id="tr-contrato"><option value="">—</option>${options}</select></div>
     <div class="field"><label><input type="checkbox" id="tr-ativo" ${row ? (row.ativo?"checked":"") : "checked"} /> Ativo</label></div>
     <div class="modal-actions">
@@ -1114,9 +1304,10 @@ function openObraModal(row) {
   openModal(`
     <h3>${isEdit ? "Editar obra" : "Nova obra"}</h3>
     <div class="field"><label>Nome da obra</label><input id="ob-nome" value="${row ? escapeHtml(row.nome) : ""}" /></div>
-    <div class="field"><label>Cliente</label><input id="ob-cliente" value="${row?.cliente || ""}" /></div>
+    <div class="field"><label>Cliente</label><input id="ob-cliente" value="${escapeHtml(row?.cliente || "")}" /></div>
     <div class="field"><label><input type="checkbox" id="ob-ativo" ${row ? (row.ativo?"checked":"") : "checked"} /> Ativa</label></div>
     <div class="modal-actions">
+      ${isEdit ? `<button class="btn btn-danger-outline" id="ob-del">Excluir</button>` : ""}
       <button class="btn btn-ghost" id="ob-cancel">Cancelar</button>
       <button class="btn btn-primary" id="ob-save">Salvar</button>
     </div>
@@ -1134,6 +1325,25 @@ function openObraModal(row) {
     await logAudit("obras", isEdit ? "editar" : "criar", "contrato", row?.id, payload);
     await loadReferenceData();
     closeModal(); toast("Obra salva"); renderObras();
+  };
+  if (isEdit) document.getElementById("ob-del").onclick = async () => {
+    // conta o que está ligado à obra antes — excluir apagaria (ou travaria) o histórico
+    const ligados = [
+      ["trabalhadores", "trabalhadores"], ["insumos", "insumos"], ["atividades", "atividades"],
+      ["faturamentos", "períodos de faturamento"], ["caixinha_campo", "lançamentos da caixinha"],
+      ["pendencias", "pendências"], ["fotos_campo", "fotos"],
+    ];
+    const contagens = await Promise.all(ligados.map(([t]) =>
+      supabase.from(t).select("id", { count: "exact", head: true }).eq("contrato_id", row.id)));
+    const resumo = ligados.map(([, rotulo], i) => [rotulo, contagens[i].count || 0]).filter(([, n]) => n > 0);
+    if (resumo.length) {
+      alert(`"${row.nome}" ainda tem ${resumo.map(([r, n]) => `${n} ${r}`).join(", ")}.\n\nPra não perder esse histórico, desmarque "Ativa" em vez de excluir.`);
+      return;
+    }
+    if (!confirm(`Excluir a obra "${row.nome}"? Essa ação não pode ser desfeita.`)) return;
+    if (!await excluirRegistro("contratos", row.id, "obras", "contrato", { nome: row.nome })) return;
+    await loadReferenceData();
+    closeModal(); toast("Obra excluída"); renderObras();
   };
 }
 
@@ -1188,8 +1398,8 @@ function openCaixaModal(row) {
     <div class="field"><label>Tipo</label>
       <select id="cx-tipo"><option value="entrada" ${row?.tipo==='entrada'?'selected':''}>Entrada</option><option value="saida" ${row?.tipo==='saida'?'selected':''}>Saída</option></select>
     </div>
-    <div class="field"><label>Data</label><input type="date" id="cx-data" value="${row?.data || new Date().toISOString().slice(0,10)}" /></div>
-    <div class="field"><label>Categoria</label><input id="cx-cat" value="${row?.categoria || ""}" placeholder="ex: recebimento, salário, fornecedor..." /></div>
+    <div class="field"><label>Data</label><input type="date" id="cx-data" value="${row?.data || hojeISO()}" /></div>
+    <div class="field"><label>Categoria</label><input id="cx-cat" value="${escapeHtml(row?.categoria || "")}" placeholder="ex: recebimento, salário, fornecedor..." /></div>
     <div class="field"><label>Descrição</label><input id="cx-desc" value="${row ? escapeHtml(row.descricao) : ""}" /></div>
     <div class="field"><label>Valor (R$)</label><input type="number" step="0.01" id="cx-valor" value="${row?.valor ?? ""}" /></div>
     <div class="modal-actions">
@@ -1216,7 +1426,7 @@ function openCaixaModal(row) {
   };
   if (isEdit) document.getElementById("cx-del").onclick = async () => {
     if (!confirm("Excluir este lançamento?")) return;
-    await supabase.from("caixa_geral").delete().eq("id", row.id);
+    if (!await excluirRegistro("caixa_geral", row.id, "financeiro", "caixa_geral", row)) return;
     closeModal(); toast("Excluído"); renderCaixaGeral();
   };
 }
@@ -1272,9 +1482,9 @@ function openCaixinhaEscritorioModal(row) {
     <div class="field"><label>Tipo</label>
       <select id="cxe-tipo"><option value="suprimento" ${row?.tipo==='suprimento'?'selected':''}>Suprimento (entrada de dinheiro)</option><option value="despesa" ${row?.tipo==='despesa'?'selected':''}>Despesa</option></select>
     </div>
-    <div class="field"><label>Data</label><input type="date" id="cxe-data" value="${row?.data || new Date().toISOString().slice(0,10)}" /></div>
+    <div class="field"><label>Data</label><input type="date" id="cxe-data" value="${row?.data || hojeISO()}" /></div>
     <div class="field"><label>Descrição</label><input id="cxe-desc" value="${row ? escapeHtml(row.descricao) : ""}" /></div>
-    <div class="field"><label>Comprovante / observação</label><input id="cxe-comp" value="${row?.comprovante_obs || ""}" placeholder="ex: nota fiscal nº..., recibo do mercado..." /></div>
+    <div class="field"><label>Comprovante / observação</label><input id="cxe-comp" value="${escapeHtml(row?.comprovante_obs || "")}" placeholder="ex: nota fiscal nº..., recibo do mercado..." /></div>
     <div class="field"><label>Valor (R$)</label><input type="number" step="0.01" id="cxe-valor" value="${row?.valor ?? ""}" /></div>
     <div class="modal-actions">
       ${isEdit ? `<button class="btn btn-danger-outline" id="cxe-del">Excluir</button>` : ""}
@@ -1300,7 +1510,7 @@ function openCaixinhaEscritorioModal(row) {
   };
   if (isEdit) document.getElementById("cxe-del").onclick = async () => {
     if (!confirm("Excluir este lançamento?")) return;
-    await supabase.from("caixinha_escritorio").delete().eq("id", row.id);
+    if (!await excluirRegistro("caixinha_escritorio", row.id, "financeiro", "caixinha_escritorio", row)) return;
     closeModal(); toast("Excluído"); renderCaixinhaEscritorio();
   };
 }
@@ -1358,7 +1568,7 @@ function openCaixinhaCampoModal(row) {
     <div class="field"><label>Tipo</label>
       <select id="cxc-tipo"><option value="adiantamento" ${row?.tipo==='adiantamento'?'selected':''}>Adiantamento recebido</option><option value="gasto" ${row?.tipo==='gasto'?'selected':''}>Gasto</option></select>
     </div>
-    <div class="field"><label>Data</label><input type="date" id="cxc-data" value="${row?.data || new Date().toISOString().slice(0,10)}" /></div>
+    <div class="field"><label>Data</label><input type="date" id="cxc-data" value="${row?.data || hojeISO()}" /></div>
     <div class="field"><label>Descrição</label><input id="cxc-desc" value="${row ? escapeHtml(row.descricao) : ""}" /></div>
     <div class="field"><label>Valor (R$)</label><input type="number" step="0.01" id="cxc-valor" value="${row?.valor ?? ""}" /></div>
     <div class="modal-actions">
@@ -1385,7 +1595,7 @@ function openCaixinhaCampoModal(row) {
   };
   if (isEdit) document.getElementById("cxc-del").onclick = async () => {
     if (!confirm("Excluir este lançamento?")) return;
-    await supabase.from("caixinha_campo").delete().eq("id", row.id);
+    if (!await excluirRegistro("caixinha_campo", row.id, "financeiro", "caixinha_campo", row)) return;
     closeModal(); toast("Excluído"); renderCaixinhaCampo();
   };
 }
@@ -1442,8 +1652,8 @@ function openCombustivelModal(row) {
   openModal(`
     <h3>${isEdit ? "Editar registro" : "Novo registro — Combustível"}</h3>
     <div class="field"><label>Veículo</label><input id="cb-veiculo" value="${row ? escapeHtml(row.veiculo) : ""}" placeholder="ex: caminhonete, moto..." /></div>
-    <div class="field"><label>Início da semana</label><input type="date" id="cb-ini" value="${row?.semana_inicio || new Date().toISOString().slice(0,10)}" /></div>
-    <div class="field"><label>Fim da semana</label><input type="date" id="cb-fim" value="${row?.semana_fim || ""}" /></div>
+    <div class="field"><label>Início da semana</label><input type="date" id="cb-ini" value="${row?.semana_inicio || hojeISO()}" /></div>
+    <div class="field"><label>Fim da semana</label><input type="date" id="cb-fim" value="${escapeHtml(row?.semana_fim || "")}" /></div>
     <div class="field"><label>Litros</label><input type="number" step="0.01" id="cb-litros" value="${row?.litros ?? ""}" /></div>
     <div class="field"><label>Km rodado</label><input type="number" step="0.1" id="cb-km" value="${row?.km_rodado ?? ""}" /></div>
     <div class="field"><label>Valor total (R$)</label><input type="number" step="0.01" id="cb-valor" value="${row?.valor ?? ""}" /></div>
@@ -1472,7 +1682,7 @@ function openCombustivelModal(row) {
   };
   if (isEdit) document.getElementById("cb-del").onclick = async () => {
     if (!confirm("Excluir este registro?")) return;
-    await supabase.from("combustivel").delete().eq("id", row.id);
+    if (!await excluirRegistro("combustivel", row.id, "financeiro", "combustivel", row)) return;
     closeModal(); toast("Excluído"); renderCombustivel();
   };
 }
@@ -1502,6 +1712,673 @@ async function renderAuditoria() {
     </div>
   `;
 }
+
+/* ============================================================
+   PENDÊNCIAS — o que está travado e precisa de alguém
+   ============================================================ */
+let pendFiltro = { status: "abertas", obra: "" };
+
+async function renderPendencias() {
+  const editavel = canWrite("pendencias");
+  document.getElementById("topbar-actions").innerHTML = editavel ? `<button class="btn btn-primary" id="new-pend-btn">+ Nova pendência</button>` : "";
+  if (editavel) document.getElementById("new-pend-btn").onclick = () => openPendenciaModal();
+
+  let q = supabase.from("pendencias").select("*, contratos(nome)").limit(300);
+  if (pendFiltro.status === "abertas") q = q.eq("resolvida", false).order("prazo", { ascending: true, nullsFirst: false });
+  else if (pendFiltro.status === "resolvidas") q = q.eq("resolvida", true).order("resolvida_em", { ascending: false });
+  else q = q.order("criado_em", { ascending: false });
+  if (pendFiltro.obra) q = q.eq("contrato_id", pendFiltro.obra);
+  const { data: rows, error } = await q;
+  if (error) throw error;
+
+  const nomeUsuario = id => cache.usuarios.find(u => u.id === id)?.nome || "—";
+  const obraOpts = cache.contratos.map(c => `<option value="${c.id}" ${pendFiltro.obra === c.id ? "selected" : ""}>${escapeHtml(c.nome)}</option>`).join("");
+  const content = document.getElementById("content");
+  content.innerHTML = `
+    <div class="tabs" id="pend-tabs">
+      ${[["abertas","Abertas"],["resolvidas","Resolvidas"],["todas","Todas"]].map(([k,l]) =>
+        `<div class="tab ${pendFiltro.status === k ? "active" : ""}" data-k="${k}">${l}</div>`).join("")}
+    </div>
+    <div class="toolbar">
+      <div class="filters"><select class="select-filter" id="pend-obra"><option value="">Todas as obras</option>${obraOpts}</select></div>
+      <div class="muted">${(rows||[]).length} pendência(s)</div>
+    </div>
+    <div class="panel panel-scroll">
+      <table>
+        <thead><tr><th>Pendência</th><th>Obra</th><th>Responsável</th><th>Prazo</th><th>Prioridade</th><th></th></tr></thead>
+        <tbody>
+          ${(rows||[]).map(r => `
+            <tr>
+              <td>
+                <div style="font-weight:500;${r.resolvida ? "text-decoration:line-through;color:var(--ink-soft)" : ""}">${escapeHtml(r.titulo)}</div>
+                ${r.descricao ? `<div class="muted">${escapeHtml(r.descricao)}</div>` : ""}
+                ${r.resolvida ? `<div class="muted">Resolvida em ${new Date(r.resolvida_em).toLocaleDateString("pt-BR")} por ${escapeHtml(nomeUsuario(r.resolvida_por))}${r.resolucao ? ` — ${escapeHtml(r.resolucao)}` : ""}</div>` : ""}
+              </td>
+              <td>${escapeHtml(r.contratos?.nome || "—")}</td>
+              <td>${escapeHtml(nomeUsuario(r.responsavel_id))}</td>
+              <td><span class="due ${!r.resolvida && isLate(r.prazo) ? "late" : ""}">${r.prazo ? fmtDate(r.prazo) : "—"}</span></td>
+              <td><span class="pill pill-${r.prioridade || "media"}">${r.prioridade || "media"}</span></td>
+              <td>${editavel ? `<div class="row-actions">
+                ${r.resolvida
+                  ? `<button class="btn btn-ghost btn-small reabrir-pend" data-id="${r.id}">Reabrir</button>`
+                  : `<button class="btn btn-ghost btn-small resolver-pend" data-id="${r.id}">Resolver</button>`}
+                <button class="btn btn-ghost btn-small edit-pend" data-id="${r.id}">Editar</button>
+              </div>` : ""}</td>
+            </tr>
+          `).join("") || `<tr><td colspan="6"><div class="empty-state">${pendFiltro.status === "abertas" ? "Nenhuma pendência em aberto" : "Nada por aqui"}</div></td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  `;
+  content.querySelectorAll("#pend-tabs .tab").forEach(t => t.onclick = () => { pendFiltro.status = t.dataset.k; renderPendencias(); });
+  document.getElementById("pend-obra").onchange = e => { pendFiltro.obra = e.target.value; renderPendencias(); };
+  const achar = id => rows.find(r => r.id === id);
+  content.querySelectorAll(".edit-pend").forEach(b => b.onclick = () => openPendenciaModal(achar(b.dataset.id)));
+  content.querySelectorAll(".resolver-pend").forEach(b => b.onclick = () => openResolverPendencia(achar(b.dataset.id)));
+  content.querySelectorAll(".reabrir-pend").forEach(b => b.onclick = async () => {
+    const r = achar(b.dataset.id);
+    const { error } = await supabase.from("pendencias")
+      .update({ resolvida: false, resolvida_em: null, resolvida_por: null, resolucao: null }).eq("id", r.id);
+    if (error) return toast("Erro: " + error.message);
+    await logAudit("pendencias", "reabrir", "pendencia", r.id, { titulo: r.titulo });
+    toast("Pendência reaberta"); renderPendencias();
+  });
+}
+
+function openPendenciaModal(row) {
+  const isEdit = !!row;
+  const obraOpts = cache.contratos.map(c => `<option value="${c.id}" ${row?.contrato_id === c.id ? "selected" : ""}>${escapeHtml(c.nome)}</option>`).join("");
+  const userOpts = cache.usuarios.map(u => `<option value="${u.id}" ${row?.responsavel_id === u.id ? "selected" : ""}>${escapeHtml(u.nome)}</option>`).join("");
+  openModal(`
+    <h3>${isEdit ? "Editar pendência" : "Nova pendência"}</h3>
+    <div class="field"><label>O que está pendente</label><input id="pd-titulo" value="${row ? escapeHtml(row.titulo) : ""}" placeholder="ex: falta assinatura do fiscal na medição de setembro" /></div>
+    <div class="field"><label>Detalhes</label><textarea id="pd-desc">${row ? escapeHtml(row.descricao || "") : ""}</textarea></div>
+    <div class="field"><label>Obra</label><select id="pd-obra"><option value="">—</option>${obraOpts}</select></div>
+    <div class="field"><label>Quem resolve</label><select id="pd-resp"><option value="">—</option>${userOpts}</select></div>
+    <div class="field"><label>Prioridade</label>
+      <select id="pd-prior">${["baixa","media","alta","urgente"].map(p => `<option value="${p}" ${(row?.prioridade || "media") === p ? "selected" : ""}>${p}</option>`).join("")}</select>
+    </div>
+    <div class="field"><label>Prazo</label><input type="date" id="pd-prazo" value="${escapeHtml(row?.prazo || "")}" /></div>
+    <div class="modal-actions">
+      ${isEdit ? `<button class="btn btn-danger-outline" id="pd-del">Excluir</button>` : ""}
+      <button class="btn btn-ghost" id="pd-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="pd-save">Salvar</button>
+    </div>
+  `);
+  document.getElementById("pd-cancel").onclick = closeModal;
+  document.getElementById("pd-save").onclick = async () => {
+    const payload = {
+      titulo: document.getElementById("pd-titulo").value.trim(),
+      descricao: document.getElementById("pd-desc").value.trim() || null,
+      contrato_id: document.getElementById("pd-obra").value || null,
+      responsavel_id: document.getElementById("pd-resp").value || null,
+      prioridade: document.getElementById("pd-prior").value,
+      prazo: document.getElementById("pd-prazo").value || null,
+    };
+    if (!payload.titulo) return toast("Descreva a pendência");
+    let id = row?.id;
+    if (isEdit) {
+      const { error } = await supabase.from("pendencias").update(payload).eq("id", row.id);
+      if (error) return toast("Erro ao salvar: " + error.message);
+    } else {
+      payload.criado_por = currentUser.id;
+      payload.resolvida = false;
+      const { data, error } = await supabase.from("pendencias").insert(payload).select().single();
+      if (error) return toast("Erro ao salvar: " + error.message);
+      id = data.id;
+    }
+    await logAudit("pendencias", isEdit ? "editar" : "criar", "pendencia", id, payload);
+    if (payload.responsavel_id && payload.responsavel_id !== row?.responsavel_id) {
+      enviarPush(payload.responsavel_id, { titulo: "Pendência pra você resolver", corpo: payload.titulo, url: "./?view=pendencias" });
+    }
+    closeModal(); toast("Pendência salva"); renderPendencias();
+  };
+  if (isEdit) document.getElementById("pd-del").onclick = async () => {
+    if (!confirm("Excluir esta pendência?")) return;
+    if (!await excluirRegistro("pendencias", row.id, "pendencias", "pendencia", { titulo: row.titulo })) return;
+    closeModal(); toast("Pendência excluída"); renderPendencias();
+  };
+}
+
+function openResolverPendencia(row) {
+  openModal(`
+    <h3>Resolver pendência</h3>
+    <p style="margin:0 0 14px;">${escapeHtml(row.titulo)}</p>
+    <div class="field"><label>Como foi resolvida? (opcional)</label><textarea id="pd-resolucao" placeholder="ex: fiscal assinou dia 20, documento na pasta da obra"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="pd-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="pd-ok">Marcar como resolvida</button>
+    </div>
+  `);
+  document.getElementById("pd-cancel").onclick = closeModal;
+  document.getElementById("pd-ok").onclick = async () => {
+    const payload = {
+      resolvida: true,
+      resolvida_em: new Date().toISOString(),
+      resolvida_por: currentUser.id,
+      resolucao: document.getElementById("pd-resolucao").value.trim() || null,
+    };
+    const { error } = await supabase.from("pendencias").update(payload).eq("id", row.id);
+    if (error) return toast("Erro: " + error.message);
+    await logAudit("pendencias", "resolver", "pendencia", row.id, { titulo: row.titulo, ...payload });
+    if (row.criado_por && row.criado_por !== currentUser.id) {
+      enviarPush(row.criado_por, { titulo: "Pendência resolvida", corpo: row.titulo, url: "./?view=pendencias" });
+    }
+    closeModal(); toast("Pendência resolvida"); renderPendencias();
+  };
+}
+
+/* ============================================================
+   FOTOS DE CAMPO
+   Fluxo rápido: botão da câmera → foto → escolhe obra/tipo (já vem
+   o último usado) → "Salvar e tirar outra" abre a câmera de novo.
+   A foto é comprimida e carimbada no aparelho, entra numa fila local
+   (IndexedDB) e sobe sozinha quando tiver sinal. Na hora da medição,
+   filtra por obra + período e baixa tudo em ZIP ou gera o relatório.
+   ============================================================ */
+const FOTO_BUCKET = "fotos-campo";
+const FOTO_CATEGORIAS = [
+  { key: "antes", label: "Antes" },
+  { key: "durante", label: "Durante" },
+  { key: "depois", label: "Depois" },
+  { key: "atividade", label: "Atividade" },
+  { key: "insumo", label: "Insumo / material" },
+  { key: "equipe", label: "Equipe" },
+  { key: "ocorrencia", label: "Ocorrência" },
+];
+const catLabel = k => FOTO_CATEGORIAS.find(c => c.key === k)?.label || k || "Sem tipo";
+const nomeObra = id => cache.contratos.find(c => c.id === id)?.nome || "Sem obra";
+
+/* ---------- fila local (IndexedDB) ---------- */
+const FilaFotos = (() => {
+  let dbp = null;
+  function abrir() {
+    if (!dbp) dbp = new Promise((res, rej) => {
+      const r = indexedDB.open("gramar-hub", 1);
+      r.onupgradeneeded = () => r.result.createObjectStore("fila_fotos", { keyPath: "id" });
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => rej(r.error);
+    });
+    return dbp;
+  }
+  async function op(modo, fn) {
+    const db = await abrir();
+    return new Promise((res, rej) => {
+      const tx = db.transaction("fila_fotos", modo);
+      const req = fn(tx.objectStore("fila_fotos"));
+      tx.oncomplete = () => res(req?.result);
+      tx.onerror = () => rej(tx.error);
+      tx.onabort = () => rej(tx.error);
+    });
+  }
+  return {
+    add: item => op("readwrite", s => s.put(item)),
+    remove: id => op("readwrite", s => s.delete(id)),
+    all: () => op("readonly", s => s.getAll()),
+    count: () => op("readonly", s => s.count()),
+  };
+})();
+
+async function atualizarBadgeFotos() {
+  try {
+    const n = await FilaFotos.count();
+    const b = document.getElementById("fab-badge");
+    b.textContent = n; b.hidden = !n;
+  } catch {}
+}
+
+/* ---------- localização (só pra foto tirada agora) ---------- */
+let ultimaGeo = null;
+function pegarGeo() {
+  return new Promise(res => {
+    if (!navigator.geolocation) return res(null);
+    navigator.geolocation.getCurrentPosition(
+      p => { ultimaGeo = { lat: p.coords.latitude, lng: p.coords.longitude, em: Date.now() }; res(ultimaGeo); },
+      () => res(ultimaGeo && Date.now() - ultimaGeo.em < 10 * 60e3 ? ultimaGeo : null),
+      { enableHighAccuracy: true, timeout: 6000, maximumAge: 120000 }
+    );
+  });
+}
+
+/* ---------- compressão + carimbo ---------- */
+async function carregarImagem(file) {
+  try { return await createImageBitmap(file, { imageOrientation: "from-image" }); }
+  catch {
+    const url = URL.createObjectURL(file);
+    try { const img = new Image(); img.src = url; await img.decode(); return img; }
+    finally { setTimeout(() => URL.revokeObjectURL(url), 1000); }
+  }
+}
+const canvasParaBlob = (c, q) => new Promise((res, rej) => c.toBlob(b => b ? res(b) : rej(new Error("Falha ao gerar imagem")), "image/jpeg", q));
+
+async function processarFoto(file, { carimbo, obra, quando, geo }) {
+  const img = await carregarImagem(file);
+  const escala = Math.min(1, 1600 / Math.max(img.width, img.height));
+  const w = Math.round(img.width * escala), h = Math.round(img.height * escala);
+  const c = document.createElement("canvas"); c.width = w; c.height = h;
+  const ctx = c.getContext("2d");
+  ctx.drawImage(img, 0, 0, w, h);
+  img.close?.();
+  if (carimbo) {
+    const linhas = [
+      obra,
+      quando.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }) +
+        (geo ? `   ·   ${geo.lat.toFixed(5)}, ${geo.lng.toFixed(5)}` : ""),
+    ];
+    const fs = Math.max(14, Math.round(Math.min(w, h) / 30));
+    const pad = Math.round(fs * 0.7), lh = Math.round(fs * 1.35);
+    const altura = pad * 2 + lh * linhas.length;
+    ctx.fillStyle = "rgba(0,0,0,0.55)";
+    ctx.fillRect(0, h - altura, w, altura);
+    ctx.fillStyle = "#fff"; ctx.textBaseline = "top";
+    linhas.forEach((l, i) => {
+      ctx.font = `${i === 0 ? 600 : 400} ${fs}px "IBM Plex Sans", Arial, sans-serif`;
+      ctx.fillText(l, pad, h - altura + pad + i * lh, w - pad * 2);
+    });
+  }
+  const blob = await canvasParaBlob(c, 0.78);
+  const ts = Math.min(1, 480 / Math.max(w, h));
+  const t = document.createElement("canvas");
+  t.width = Math.round(w * ts); t.height = Math.round(h * ts);
+  t.getContext("2d").drawImage(c, 0, 0, t.width, t.height);
+  const thumb = await canvasParaBlob(t, 0.7);
+  return { blob, thumb, largura: w, altura: h };
+}
+
+/* ---------- captura ---------- */
+let geoPendente = null;
+const inputCamera = document.getElementById("foto-camera");
+const inputGaleria = document.getElementById("foto-galeria");
+function abrirCamera() { geoPendente = pegarGeo(); inputCamera.value = ""; inputCamera.click(); }
+function abrirGaleria() { inputGaleria.value = ""; inputGaleria.click(); }
+document.getElementById("fab-foto").addEventListener("click", abrirCamera);
+inputCamera.addEventListener("change", () => { if (inputCamera.files.length) abrirFolhaFoto([...inputCamera.files]); });
+inputGaleria.addEventListener("change", () => { if (inputGaleria.files.length) abrirFolhaFoto([...inputGaleria.files]); });
+
+function abrirFolhaFoto(files) {
+  const prefs = lerLocal("prefs_foto", {});
+  if (prefs.obra && !cache.contratos.some(c => c.id === prefs.obra)) prefs.obra = "";
+  const urls = files.map(f => URL.createObjectURL(f));
+  const ativas = cache.contratos.filter(c => c.ativo !== false);
+  let categoria = prefs.categoria || "durante";
+  openModal(`
+    <h3>${files.length > 1 ? `${files.length} fotos` : "Foto de campo"}</h3>
+    <div class="foto-preview">${urls.slice(0, 12).map(u => `<img src="${u}" alt="">`).join("")}</div>
+    <div class="field"><label>Obra</label>
+      <select id="ft-obra"><option value="">Sem obra</option>${ativas.map(c => `<option value="${c.id}" ${prefs.obra === c.id ? "selected" : ""}>${escapeHtml(c.nome)}</option>`).join("")}</select>
+    </div>
+    <div class="field"><label>O que a foto mostra</label>
+      <div class="chips" id="ft-cat">${FOTO_CATEGORIAS.map(c => `<button type="button" class="chip ${categoria === c.key ? "on" : ""}" data-k="${c.key}">${c.label}</button>`).join("")}</div>
+    </div>
+    <div class="field"><label>Legenda (opcional)</label><input id="ft-leg" placeholder="ex: roçagem trecho 2, lado norte" /></div>
+    <div class="field"><label class="check"><input type="checkbox" id="ft-carimbo" ${prefs.carimbo !== false ? "checked" : ""} /> Carimbar obra, data e local na foto</label></div>
+    <div class="acoes-foto">
+      <button class="btn btn-ghost" id="ft-descartar">Descartar</button>
+      <button class="btn btn-ghost" id="ft-salvar">Salvar</button>
+      <button class="btn btn-primary" id="ft-proxima">Salvar e tirar outra</button>
+    </div>
+  `);
+  const corpo = document.getElementById("modal-body");
+  corpo.addEventListener("modal-fechado", () => urls.forEach(u => URL.revokeObjectURL(u)), { once: true });
+  corpo.querySelectorAll("#ft-cat .chip").forEach(ch => ch.onclick = () => {
+    categoria = ch.dataset.k;
+    corpo.querySelectorAll("#ft-cat .chip").forEach(x => x.classList.toggle("on", x === ch));
+  });
+  const coletar = () => ({
+    obra: document.getElementById("ft-obra").value || null,
+    categoria,
+    legenda: document.getElementById("ft-leg").value.trim() || null,
+    carimbo: document.getElementById("ft-carimbo").checked,
+  });
+  document.getElementById("ft-descartar").onclick = closeModal;
+  document.getElementById("ft-salvar").onclick = () => { const o = coletar(); closeModal(); guardarFotos(files, o); };
+  document.getElementById("ft-proxima").onclick = () => {
+    const o = coletar();
+    closeModal();
+    abrirCamera();           // abre a câmera já, enquanto a foto anterior é processada em segundo plano
+    guardarFotos(files, o);
+  };
+}
+
+async function guardarFotos(files, o) {
+  gravarLocal("prefs_foto", { obra: o.obra || "", categoria: o.categoria, carimbo: o.carimbo });
+  const temFresca = files.some(f => Math.abs(Date.now() - (f.lastModified || Date.now())) < 15 * 60e3);
+  const geoAgora = temFresca ? await (geoPendente || pegarGeo()) : null;
+  geoPendente = null;
+  let ok = 0;
+  for (const file of files) {
+    try {
+      const quando = new Date(file.lastModified || Date.now());
+      const fresca = Math.abs(Date.now() - quando.getTime()) < 15 * 60e3; // foto da galeria antiga não leva o GPS de agora
+      const geo = fresca ? geoAgora : null;
+      const p = await processarFoto(file, { carimbo: o.carimbo, obra: nomeObra(o.obra), quando, geo });
+      const id = novoId();
+      const data = hojeISO(quando);
+      const base = `${o.obra || "sem-obra"}/${data.slice(0, 7)}/${data}_${id}`;
+      await FilaFotos.add({
+        id, blob: p.blob, thumb: p.thumb,
+        meta: {
+          id, contrato_id: o.obra, data, tirada_em: quando.toISOString(),
+          categoria: o.categoria, legenda: o.legenda,
+          storage_path: `${base}.jpg`, thumb_path: `${base}_t.jpg`,
+          latitude: geo?.lat ?? null, longitude: geo?.lng ?? null,
+          largura: p.largura, altura: p.altura, tamanho_bytes: p.blob.size,
+          registrado_por: currentUser.id,
+        },
+      });
+      ok++;
+    } catch (e) {
+      console.error(e);
+      toast("Uma foto não pôde ser lida: " + (e.message || e));
+    }
+  }
+  await atualizarBadgeFotos();
+  if (ok) toast(navigator.onLine ? `${ok} foto(s) guardada(s) — enviando…` : `${ok} foto(s) guardada(s) no aparelho — sobem quando tiver sinal`);
+  if (currentView === "fotos" && !document.getElementById("modal-bg").classList.contains("open")) renderFotos();
+  enviarFilaFotos();
+}
+
+/* ---------- envio da fila ---------- */
+let enviandoFila = false;
+let ultimoErroFila = null;
+async function enviarFilaFotos() {
+  if (enviandoFila || !currentUser || !navigator.onLine) return atualizarBadgeFotos();
+  enviandoFila = true;
+  let enviadas = 0;
+  try {
+    const itens = await FilaFotos.all();
+    const st = supabase.storage.from(FOTO_BUCKET);
+    for (const it of itens) {
+      const a = await st.upload(it.meta.storage_path, it.blob, { contentType: "image/jpeg", upsert: true });
+      if (a.error) throw a.error;
+      const b = await st.upload(it.meta.thumb_path, it.thumb, { contentType: "image/jpeg", upsert: true });
+      if (b.error) throw b.error;
+      const { error } = await supabase.from("fotos_campo").upsert(it.meta, { onConflict: "id" });
+      if (error) throw error;
+      await FilaFotos.remove(it.id);
+      enviadas++;
+      atualizarBadgeFotos();
+    }
+    ultimoErroFila = null;
+  } catch (e) {
+    ultimoErroFila = e.message || String(e);
+    console.warn("Fila de fotos — tenta de novo depois:", e);
+  } finally {
+    enviandoFila = false;
+    await atualizarBadgeFotos();
+    if (enviadas && currentView === "fotos" && !document.getElementById("modal-bg").classList.contains("open")) renderFotos();
+  }
+}
+window.addEventListener("online", enviarFilaFotos);
+setInterval(enviarFilaFotos, 60000);
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") enviarFilaFotos(); });
+
+/* ---------- tela de fotos ---------- */
+let fotosFiltro = null;
+let fotosUrlsLocais = [];
+
+function abrirFotosDoPeriodo(contrato_id, de, ate) {
+  fotosFiltro = { obra: contrato_id || "", de: de || fotosFiltroPadrao().de, ate: ate || hojeISO(), categoria: "" };
+  setView("fotos");
+}
+function fotosFiltroPadrao() {
+  const h = new Date();
+  return { obra: "", de: hojeISO(new Date(h.getFullYear(), h.getMonth(), 1)), ate: hojeISO(h), categoria: "" };
+}
+
+async function renderFotos() {
+  if (!fotosFiltro) fotosFiltro = fotosFiltroPadrao();
+  const f = fotosFiltro;
+  const editavel = canWrite("fotos");
+  document.getElementById("topbar-actions").innerHTML = editavel
+    ? `<button class="btn btn-ghost" id="ft-galeria-btn">Da galeria</button><button class="btn btn-primary" id="ft-camera-btn">Tirar foto</button>` : "";
+  if (editavel) {
+    document.getElementById("ft-galeria-btn").onclick = abrirGaleria;
+    document.getElementById("ft-camera-btn").onclick = abrirCamera;
+  }
+
+  fotosUrlsLocais.forEach(u => URL.revokeObjectURL(u)); fotosUrlsLocais = [];
+  let pendentes = [];
+  try { pendentes = await FilaFotos.all(); } catch {}
+
+  let rows = [], thumbs = {}, erroRemoto = null;
+  if (navigator.onLine) {
+    let q = supabase.from("fotos_campo").select("*, contratos(nome), usuarios(nome)")
+      .gte("data", f.de).lte("data", f.ate).order("tirada_em", { ascending: false }).limit(2000);
+    if (f.obra === "sem") q = q.is("contrato_id", null); else if (f.obra) q = q.eq("contrato_id", f.obra);
+    if (f.categoria) q = q.eq("categoria", f.categoria);
+    const { data, error } = await q;
+    if (error) erroRemoto = error.message; else rows = data || [];
+    for (let i = 0; i < rows.length; i += 200) {
+      const lote = rows.slice(i, i + 200);
+      const { data: s } = await supabase.storage.from(FOTO_BUCKET).createSignedUrls(lote.map(r => r.thumb_path), 3600);
+      (s || []).forEach((x, j) => { if (x.signedUrl) thumbs[lote[j].id] = x.signedUrl; });
+    }
+  }
+
+  const porDia = {};
+  rows.forEach(r => (porDia[r.data] = porDia[r.data] || []).push(r));
+  const obraOpts = cache.contratos.map(c => `<option value="${c.id}" ${f.obra === c.id ? "selected" : ""}>${escapeHtml(c.nome)}</option>`).join("");
+  const content = document.getElementById("content");
+  content.innerHTML = `
+    ${!navigator.onLine ? `<div class="notice">Sem conexão — as fotos ficam guardadas aqui no aparelho e sobem sozinhas quando o sinal voltar.</div>` : ""}
+    ${erroRemoto ? `<div class="notice">Não consegui buscar as fotos enviadas: ${escapeHtml(erroRemoto)}</div>` : ""}
+    ${pendentes.length ? `
+      <div class="notice">
+        <span><b>${pendentes.length}</b> foto(s) guardada(s) neste aparelho aguardando envio${ultimoErroFila ? ` — último erro: ${escapeHtml(ultimoErroFila)}` : ""}</span>
+        <button class="btn btn-ghost btn-small" id="ft-reenviar">Enviar agora</button>
+      </div>
+      <div class="foto-grid" style="margin-bottom:22px;">
+        ${pendentes.map(p => { const u = URL.createObjectURL(p.thumb); fotosUrlsLocais.push(u);
+          return `<div class="foto-thumb pendente"><img src="${u}" alt=""><span class="tag">${escapeHtml(nomeObra(p.meta.contrato_id))}</span></div>`; }).join("")}
+      </div>` : ""}
+    <div class="toolbar">
+      <div class="filters">
+        <select class="select-filter" id="ff-obra"><option value="">Todas as obras</option><option value="sem" ${f.obra === "sem" ? "selected" : ""}>Sem obra</option>${obraOpts}</select>
+        <input type="date" class="input-filter" id="ff-de" value="${f.de}" />
+        <input type="date" class="input-filter" id="ff-ate" value="${f.ate}" />
+        <select class="select-filter" id="ff-cat"><option value="">Todos os tipos</option>${FOTO_CATEGORIAS.map(c => `<option value="${c.key}" ${f.categoria === c.key ? "selected" : ""}>${c.label}</option>`).join("")}</select>
+      </div>
+      <div class="filters">
+        <span class="muted" style="align-self:center;">${rows.length} foto(s)</span>
+        <button class="btn btn-ghost" id="ff-relatorio" ${rows.length ? "" : "disabled"}>Relatório fotográfico</button>
+        <button class="btn btn-ghost" id="ff-zip" ${rows.length ? "" : "disabled"}>Baixar ZIP</button>
+      </div>
+    </div>
+    ${Object.keys(porDia).sort().reverse().map(dia => `
+      <div class="foto-dia">
+        <h4>${new Date(dia + "T00:00:00").toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" })} · ${porDia[dia].length}</h4>
+        <div class="foto-grid">
+          ${porDia[dia].map(r => `
+            <button class="foto-thumb" data-id="${r.id}" title="${escapeHtml(r.legenda || "")}">
+              ${thumbs[r.id] ? `<img src="${thumbs[r.id]}" loading="lazy" alt="">` : ""}
+              <span class="tag">${escapeHtml(f.obra ? catLabel(r.categoria) : (r.contratos?.nome || "Sem obra"))}</span>
+            </button>`).join("")}
+        </div>
+      </div>`).join("") || (navigator.onLine && !erroRemoto ? `<div class="empty-state"><div class="big">Nenhuma foto nesse filtro</div>Toque no botão da câmera pra registrar o campo.</div>` : "")}
+  `;
+  const recarregar = () => {
+    fotosFiltro = {
+      obra: document.getElementById("ff-obra").value,
+      de: document.getElementById("ff-de").value || f.de,
+      ate: document.getElementById("ff-ate").value || f.ate,
+      categoria: document.getElementById("ff-cat").value,
+    };
+    renderFotos();
+  };
+  ["ff-obra", "ff-de", "ff-ate", "ff-cat"].forEach(id => document.getElementById(id).onchange = recarregar);
+  document.getElementById("ft-reenviar")?.addEventListener("click", async () => { toast("Enviando…"); await enviarFilaFotos(); renderFotos(); });
+  document.getElementById("ff-zip").onclick = () => baixarZipFotos(rows);
+  document.getElementById("ff-relatorio").onclick = () => relatorioFotografico(rows);
+  content.querySelectorAll(".foto-thumb[data-id]").forEach(b => b.onclick = () => abrirFotoDetalhe(rows.find(r => r.id === b.dataset.id)));
+}
+
+async function abrirFotoDetalhe(r) {
+  const podeEditar = canWrite("fotos") && (r.registrado_por === currentUser.id || ["admin", "gestor"].includes(currentUser.papel));
+  openModal(`
+    <div class="lightbox">
+      <div><img id="fd-img" alt=""></div>
+      <div>
+        <h3 style="margin-bottom:6px;">${escapeHtml(r.contratos?.nome || "Sem obra")}</h3>
+        <div class="muted" style="margin-bottom:14px;">
+          ${new Date(r.tirada_em).toLocaleString("pt-BR", { dateStyle: "full", timeStyle: "short" })}<br>
+          por ${escapeHtml(r.usuarios?.nome || "—")}
+          ${r.latitude != null ? `<br><a href="https://www.google.com/maps?q=${r.latitude},${r.longitude}" target="_blank" rel="noopener">Ver no mapa</a>` : ""}
+        </div>
+        ${podeEditar ? `
+          <div class="field"><label>Obra</label><select id="fd-obra"><option value="">Sem obra</option>${cache.contratos.map(c => `<option value="${c.id}" ${r.contrato_id === c.id ? "selected" : ""}>${escapeHtml(c.nome)}</option>`).join("")}</select></div>
+          <div class="field"><label>Tipo</label><select id="fd-cat">${FOTO_CATEGORIAS.map(c => `<option value="${c.key}" ${r.categoria === c.key ? "selected" : ""}>${c.label}</option>`).join("")}</select></div>
+          <div class="field"><label>Legenda</label><input id="fd-leg" value="${escapeHtml(r.legenda || "")}" /></div>
+        ` : `<p><b>${catLabel(r.categoria)}</b>${r.legenda ? ` — ${escapeHtml(r.legenda)}` : ""}</p>`}
+        <div class="modal-actions">
+          ${podeEditar ? `<button class="btn btn-danger-outline" id="fd-del">Excluir</button>` : ""}
+          <a class="btn btn-ghost" id="fd-abrir" target="_blank" rel="noopener">Abrir original</a>
+          <button class="btn btn-ghost" id="fd-fechar">Fechar</button>
+          ${podeEditar ? `<button class="btn btn-primary" id="fd-save">Salvar</button>` : ""}
+        </div>
+      </div>
+    </div>
+  `, { wide: true });
+  document.getElementById("fd-fechar").onclick = closeModal;
+  const { data: s } = await supabase.storage.from(FOTO_BUCKET).createSignedUrl(r.storage_path, 3600);
+  if (s?.signedUrl) {
+    document.getElementById("fd-img").src = s.signedUrl;
+    document.getElementById("fd-abrir").href = s.signedUrl;
+  }
+  if (!podeEditar) return;
+  document.getElementById("fd-save").onclick = async () => {
+    const payload = {
+      contrato_id: document.getElementById("fd-obra").value || null,
+      categoria: document.getElementById("fd-cat").value,
+      legenda: document.getElementById("fd-leg").value.trim() || null,
+    };
+    const { error } = await supabase.from("fotos_campo").update(payload).eq("id", r.id);
+    if (error) return toast("Erro ao salvar: " + error.message);
+    await logAudit("fotos", "editar", "foto", r.id, payload);
+    closeModal(); toast("Foto atualizada"); renderFotos();
+  };
+  document.getElementById("fd-del").onclick = async () => {
+    if (!confirm("Excluir esta foto? Ela some também do relatório da medição.")) return;
+    await supabase.storage.from(FOTO_BUCKET).remove([r.storage_path, r.thumb_path]);
+    if (!await excluirRegistro("fotos_campo", r.id, "fotos", "foto", { obra: r.contratos?.nome, data: r.data })) return;
+    closeModal(); toast("Foto excluída"); renderFotos();
+  };
+}
+
+/* ---------- saída para a medição ---------- */
+function carregarScript(src) {
+  return new Promise((res, rej) => {
+    if ([...document.scripts].some(s => s.src === src)) return res();
+    const s = document.createElement("script");
+    s.src = src; s.onload = res; s.onerror = () => rej(new Error("Não consegui carregar " + src));
+    document.head.appendChild(s);
+  });
+}
+const slug = t => (t || "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-|-$/g, "").toLowerCase().slice(0, 40);
+
+async function urlsAssinadas(caminhos) {
+  const mapa = {};
+  for (let i = 0; i < caminhos.length; i += 200) {
+    const lote = caminhos.slice(i, i + 200);
+    const { data, error } = await supabase.storage.from(FOTO_BUCKET).createSignedUrls(lote, 3600);
+    if (error) throw error;
+    (data || []).forEach((x, j) => { if (x.signedUrl) mapa[lote[j]] = x.signedUrl; });
+  }
+  return mapa;
+}
+
+async function baixarZipFotos(rows) {
+  if (!rows.length) return toast("Nenhuma foto no filtro");
+  const btn = document.getElementById("ff-zip");
+  const rotulo = btn.textContent;
+  btn.disabled = true;
+  try {
+    await carregarScript("https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js");
+    const urls = await urlsAssinadas(rows.map(r => r.storage_path));
+    const zip = new JSZip();
+    const ordenadas = [...rows].sort((a, b) => a.tirada_em.localeCompare(b.tirada_em));
+    const contador = {};
+    const indice = [["arquivo", "obra", "data", "hora", "tipo", "legenda", "autor", "latitude", "longitude"]];
+    let feitas = 0;
+    const tarefas = ordenadas.map(r => async () => {
+      const obra = r.contratos?.nome || "Sem obra";
+      const pasta = `${slug(obra) || "sem-obra"}/${r.data}`;
+      contador[pasta] = (contador[pasta] || 0) + 1;
+      const nome = `${pasta}/${String(contador[pasta]).padStart(3, "0")}_${r.categoria || "foto"}${r.legenda ? "_" + slug(r.legenda) : ""}.jpg`;
+      const resp = await fetch(urls[r.storage_path]);
+      if (!resp.ok) throw new Error("Falha ao baixar uma foto");
+      zip.file(nome, await resp.blob());
+      const t = new Date(r.tirada_em);
+      indice.push([nome, obra, fmtDate(r.data), t.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+        catLabel(r.categoria), r.legenda || "", r.usuarios?.nome || "", r.latitude ?? "", r.longitude ?? ""]);
+      btn.textContent = `Baixando ${++feitas}/${rows.length}…`;
+    });
+    // baixa 4 de cada vez
+    const fila = [...tarefas];
+    await Promise.all(Array.from({ length: 4 }, async () => { while (fila.length) await fila.shift()(); }));
+    const csv = "﻿" + indice.map(l => l.map(v => `"${String(v).replace(/"/g, '""')}"`).join(";")).join("\r\n");
+    zip.file("indice.csv", csv);
+    btn.textContent = "Compactando…";
+    const blob = await zip.generateAsync({ type: "blob" });
+    const f = fotosFiltro;
+    const nomeZip = `fotos_${f.obra && f.obra !== "sem" ? slug(nomeObra(f.obra)) : "todas-as-obras"}_${f.de}_a_${f.ate}.zip`;
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = nomeZip;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 30000);
+    await logAudit("fotos", "exportar_zip", "foto", null, { quantidade: rows.length, ...f });
+    toast(`ZIP pronto com ${rows.length} foto(s)`);
+  } catch (e) {
+    console.error(e); toast("Não consegui gerar o ZIP: " + (e.message || e));
+  } finally {
+    btn.disabled = false; btn.textContent = rotulo;
+  }
+}
+
+async function relatorioFotografico(rows) {
+  if (!rows.length) return toast("Nenhuma foto no filtro");
+  const janela = window.open("", "_blank"); // precisa abrir já no toque, senão o navegador bloqueia
+  if (!janela) return toast("Libere pop-ups deste site pra gerar o relatório");
+  janela.document.write("<p style='font-family:sans-serif;padding:20px'>Montando relatório…</p>");
+  try {
+    const urls = await urlsAssinadas(rows.map(r => r.storage_path));
+    const f = fotosFiltro;
+    const porObra = {};
+    [...rows].sort((a, b) => a.tirada_em.localeCompare(b.tirada_em))
+      .forEach(r => (porObra[r.contratos?.nome || "Sem obra"] = porObra[r.contratos?.nome || "Sem obra"] || []).push(r));
+    const esc = escapeHtml;
+    const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Relatório fotográfico</title>
+<style>
+  body{font-family:"IBM Plex Sans",Arial,sans-serif;color:#16241C;margin:24px;}
+  h1{font-size:20px;margin:0 0 4px;} .sub{color:#555;font-size:12px;margin-bottom:18px;}
+  h2{font-size:16px;margin:26px 0 10px;border-bottom:2px solid #2F5233;padding-bottom:4px;break-after:avoid;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  figure{margin:0;break-inside:avoid;border:1px solid #ddd;border-radius:6px;overflow:hidden;}
+  figure img{width:100%;height:260px;object-fit:cover;display:block;background:#eee;}
+  figcaption{font-size:11px;padding:6px 8px;line-height:1.4;}
+  .barra{margin-bottom:16px;} .barra button{padding:8px 14px;font-size:14px;}
+  @media print{.barra{display:none;} body{margin:10mm;} @page{size:A4;margin:10mm;}}
+</style></head><body>
+<div class="barra"><button onclick="print()">Imprimir / salvar em PDF</button></div>
+<h1>Relatório fotográfico</h1>
+<div class="sub">Gramar Construções e Soluções Ambientais · Período ${fmtDate(f.de)} a ${fmtDate(f.ate)} · ${rows.length} foto(s) · gerado em ${new Date().toLocaleString("pt-BR")}</div>
+${Object.entries(porObra).map(([obra, fs]) => `
+  <h2>${esc(obra)} — ${fs.length} foto(s)</h2>
+  <div class="grid">${fs.map((r, i) => `
+    <figure><img src="${urls[r.storage_path] || ""}">
+      <figcaption><b>${i + 1}. ${esc(catLabel(r.categoria))}</b>${r.legenda ? " — " + esc(r.legenda) : ""}<br>
+      ${new Date(r.tirada_em).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })} · ${esc(r.usuarios?.nome || "")}</figcaption>
+    </figure>`).join("")}
+  </div>`).join("")}
+</body></html>`;
+    janela.document.open(); janela.document.write(html); janela.document.close();
+    await logAudit("fotos", "relatorio", "foto", null, { quantidade: rows.length, ...f });
+  } catch (e) {
+    janela.close(); toast("Não consegui montar o relatório: " + (e.message || e));
+  }
+}
+
+atualizarBadgeFotos();
 
 /* ============================================================
    TABELA GENÉRICA DE STATUS (insumos/atividades)
@@ -1534,6 +2411,9 @@ function renderStatusTable(rows, moduleName, columns, editFn, editavel) {
     });
   }
 }
+
+// tudo definido — agora sim confere se já tem sessão aberta
+checkSession();
 </script>
 </body>
 </html>
