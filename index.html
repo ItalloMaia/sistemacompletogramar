@@ -227,6 +227,7 @@ textarea{width:100%;resize:vertical;min-height:70px;padding:9px 11px;border:1px 
 .fab svg{width:28px;height:28px;}
 .fab:active{transform:scale(0.95);}
 body.logado .fab{display:flex;}
+body.logado.sem-fab .fab{display:none;}
 .fab .badge{
   position:absolute;top:-3px;right:-3px;min-width:22px;height:22px;padding:0 6px;border-radius:11px;
   background:var(--danger);color:#fff;font-size:0.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid var(--canvas);
@@ -255,6 +256,35 @@ body.logado .fab{display:flex;}
 .lightbox{display:grid;grid-template-columns:1.6fr 1fr;gap:18px;}
 .lightbox img{width:100%;border-radius:var(--radius-sm);background:#E3E0D3;min-height:200px;}
 @media (max-width:700px){ #ft-camera-btn{display:none;} .topbar{align-items:flex-start;gap:10px;} .lightbox{grid-template-columns:1fr;} .content{padding:18px 14px 110px;} .topbar{padding:14px;} }
+
+/* ---------- EFETIVO ---------- */
+.ef-lista{display:flex;flex-direction:column;gap:8px;}
+.ef-item{background:var(--canvas-raised);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;display:grid;grid-template-columns:1fr auto;gap:8px 12px;align-items:center;}
+.ef-item.bloq{opacity:0.6;}
+.ef-toggle{display:flex;border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden;}
+.ef-btn{border:none;background:#fff;padding:10px 14px;font-size:0.85rem;font-weight:600;color:var(--ink-soft);min-width:84px;}
+.ef-btn + .ef-btn{border-left:1px solid var(--line);}
+.ef-btn.on-sim{background:var(--moss);color:#fff;}
+.ef-btn.on-nao{background:var(--danger);color:#fff;}
+.ef-obs{grid-column:1 / -1;padding:9px 11px;border:1px solid var(--line);border-radius:var(--radius-sm);}
+.ef-acoes{position:sticky;bottom:0;background:linear-gradient(transparent, var(--canvas) 30%);padding:18px 0 10px;display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;}
+.ef-acoes .btn-primary{width:auto;margin:0;}
+@media (max-width:700px){ .ef-item{grid-template-columns:1fr;} .ef-toggle{width:100%;} .ef-btn{flex:1;} .ef-acoes .btn{flex:1 1 100%;} }
+
+/* ---------- ASSISTENTE ---------- */
+.ia-wrap{display:flex;flex-direction:column;height:calc(100vh - 170px);min-height:420px;max-width:860px;margin:0 auto;}
+.ia-msgs{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:4px 2px 12px;}
+.ia-boasvindas{text-align:center;margin:auto 0;padding:20px;}
+.ia-boasvindas .big{font-size:1.15rem;margin-bottom:6px;}
+.ia-msg{max-width:85%;padding:10px 14px;border-radius:14px;font-size:0.92rem;line-height:1.5;}
+.ia-msg.user{align-self:flex-end;background:var(--moss);color:#fff;border-bottom-right-radius:4px;}
+.ia-msg.assistant{align-self:flex-start;background:var(--canvas-raised);border:1px solid var(--line);border-bottom-left-radius:4px;}
+.ia-pensando{color:var(--ink-soft);font-style:italic;}
+.ia-msg-acoes{display:flex;gap:6px;margin-top:8px;}
+.ia-form{display:flex;gap:8px;align-items:flex-end;padding-top:10px;border-top:1px solid var(--line);}
+.ia-form textarea{flex:1;min-height:44px;max-height:140px;resize:none;}
+.ia-form .btn-primary{width:auto;margin:0;height:44px;}
+@media (max-width:700px){ .ia-wrap{height:calc(100vh - 150px);} .ia-msg{max-width:92%;} }
 </style>
 </head>
 <body>
@@ -288,23 +318,29 @@ body.logado .fab{display:flex;}
       <div class="nav-group">
         <div class="nav-label">GERAL</div>
         <div class="nav-item" data-view="dashboard"><span class="nav-icon"></span> Dashboard</div>
+        <div class="nav-item" data-view="assistente"><span class="nav-icon"></span> Assistente IA</div>
       </div>
 
       <div class="nav-group">
-        <div class="nav-label">TAREFAS</div>
-        <div class="nav-item" data-view="tarefas"><span class="nav-icon"></span> Quadro</div>
-        <div class="nav-item" data-view="pendencias"><span class="nav-icon"></span> Pendências</div>
-      </div>
-
-      <div class="nav-group">
-        <div class="nav-label">MEDIÇÕES</div>
+        <div class="nav-label">CAMPO</div>
+        <div class="nav-item" data-view="presenca"><span class="nav-icon"></span> Efetivo diário</div>
         <div class="nav-item" data-view="fotos"><span class="nav-icon"></span> Fotos de campo</div>
-        <div class="nav-item" data-view="presenca"><span class="nav-icon"></span> Presença</div>
-        <div class="nav-item" data-view="insumos"><span class="nav-icon"></span> Insumos</div>
         <div class="nav-item" data-view="atividades"><span class="nav-icon"></span> Atividades</div>
+        <div class="nav-item" data-view="insumos"><span class="nav-icon"></span> Insumos</div>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-label">GESTÃO</div>
+        <div class="nav-item" data-view="registro"><span class="nav-icon"></span> Registro da obra</div>
+        <div class="nav-item" data-view="tarefas"><span class="nav-icon"></span> Quadro de tarefas</div>
+        <div class="nav-item" data-view="pendencias"><span class="nav-icon"></span> Pendências</div>
         <div class="nav-item" data-view="faturamento"><span class="nav-icon"></span> Faturamento</div>
-        <div class="nav-item" data-view="trabalhadores"><span class="nav-icon"></span> Trabalhadores</div>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-label">CADASTROS</div>
         <div class="nav-item" data-view="obras"><span class="nav-icon"></span> Obras</div>
+        <div class="nav-item" data-view="trabalhadores"><span class="nav-icon"></span> Funcionários</div>
       </div>
 
       <div class="nav-group">
@@ -381,6 +417,8 @@ const ICONS = {
   caixinha_escritorio: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><circle cx="15" cy="15" r="6" stroke-dasharray="0"/><path d="M9.5 6.5c-.5 1-.5 3 0 4"/></svg>`,
   caixinha_campo: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15l2-7a2 2 0 012-1.5h10A2 2 0 0119 8.5L21 15"/><path d="M3 15h18v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3z"/><path d="M9 15V9"/></svg>`,
   combustivel: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22V6a2 2 0 012-2h6a2 2 0 012 2v16"/><path d="M3 22h10"/><path d="M13 9h2l3 3v6a1.5 1.5 0 01-3 0"/><path d="M6 6v4h4V6"/></svg>`,
+  registro: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v2h6V3"/><path d="M9 11h6M9 15h4"/></svg>`,
+  assistente: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>`,
   pendencias: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22V4"/><path d="M4 4h12l-2 4 2 4H4"/></svg>`,
   fotos: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>`,
   auditoria: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 5v7h7"/><path d="M12 8v4l3 2"/></svg>`,
@@ -409,14 +447,16 @@ const STATUS_TAREFA = [
    readOnly: dentro das telas que aparecem, em quais o papel só consulta
              (sem botão de novo/editar/excluir) */
 const PERMISSIONS = {
-  admin:  { label: "Administrador",   views: ["dashboard","tarefas","pendencias","fotos","presenca","insumos","atividades","faturamento","trabalhadores","obras","caixa","caixinha_escritorio","caixinha_campo","combustivel","auditoria"], readOnly: [] },
-  gestor: { label: "Gestão",          views: ["dashboard","tarefas","pendencias","fotos","presenca","insumos","atividades","faturamento","trabalhadores","obras","caixa","caixinha_escritorio","caixinha_campo","combustivel","auditoria"], readOnly: ["insumos","atividades","faturamento","caixinha_escritorio","caixinha_campo","combustivel"] },
-  membro: { label: "Administrativo",  views: ["dashboard","tarefas","pendencias","fotos","presenca","insumos","atividades","faturamento","trabalhadores","obras","caixinha_escritorio","combustivel"], readOnly: ["faturamento","trabalhadores","obras"] },
-  almoxarife: { label: "Almoxarifado", views: ["dashboard","tarefas","pendencias","fotos","insumos","obras"], readOnly: ["obras"] },
-  campo:  { label: "Campo",           views: ["dashboard","tarefas","pendencias","fotos","presenca","insumos","atividades","caixinha_campo"], readOnly: [] },
+  admin:  { label: "Administrador",   views: ["dashboard","assistente","presenca","fotos","atividades","insumos","registro","tarefas","pendencias","faturamento","obras","trabalhadores","caixa","caixinha_escritorio","caixinha_campo","combustivel","auditoria"], readOnly: [] },
+  gestor: { label: "Gestão",          views: ["dashboard","assistente","presenca","fotos","atividades","insumos","registro","tarefas","pendencias","faturamento","obras","trabalhadores","caixa","caixinha_escritorio","caixinha_campo","combustivel","auditoria"], readOnly: ["insumos","atividades","faturamento","caixinha_escritorio","caixinha_campo","combustivel"] },
+  membro: { label: "Administrativo",  views: ["dashboard","assistente","presenca","fotos","atividades","insumos","registro","tarefas","pendencias","faturamento","obras","trabalhadores","caixinha_escritorio","combustivel"], readOnly: ["faturamento"] },
+  almoxarife: { label: "Almoxarifado", views: ["dashboard","fotos","insumos","tarefas","pendencias","obras"], readOnly: ["obras"] },
+  campo:  { label: "Campo",           views: ["dashboard","presenca","fotos","atividades","insumos","registro","tarefas","pendencias","caixinha_campo"], readOnly: [] },
 };
+// módulos guardados para depois: somem do menu e das permissões, mas o código continua aqui
+const MODULOS_DESLIGADOS = ["caixa","caixinha_escritorio","caixinha_campo","combustivel"];
 function perms() { return PERMISSIONS[currentUser?.papel] || PERMISSIONS.membro; }
-function canView(view) { return perms().views.includes(view); }
+function canView(view) { return perms().views.includes(view) && !MODULOS_DESLIGADOS.includes(view); }
 function canWrite(view) { return canView(view) && !perms().readOnly.includes(view); }
 
 /* ============================================================
@@ -558,12 +598,15 @@ async function afterLogin(authUser) {
   document.querySelectorAll(".nav-item").forEach(el => {
     el.style.display = canView(el.dataset.view) ? "" : "none";
   });
+  document.querySelectorAll(".nav-group").forEach(g => {
+    g.style.display = [...g.querySelectorAll(".nav-item")].some(i => i.style.display !== "none") ? "" : "none";
+  });
   document.getElementById("fab-foto").style.display = canWrite("fotos") ? "" : "none";
   await loadReferenceData();
 
   // tela inicial: a do link (ex.: notificação abre ?view=pendencias); sem sinal, vai direto pras fotos
   const pedida = new URLSearchParams(location.search).get("view");
-  let inicial = canView("dashboard") ? "dashboard" : perms().views[0];
+  let inicial = canView("dashboard") ? "dashboard" : perms().views.find(canView);
   if (pedida && VIEW_META[pedida] && canView(pedida)) inicial = pedida;
   if (!navigator.onLine && canView("fotos")) inicial = "fotos";
   setView(inicial);
@@ -696,11 +739,13 @@ const VIEW_META = {
   tarefas: ["Quadro de tarefas", "Arraste os cartões entre as colunas"],
   pendencias: ["Pendências", "O que está travado e precisa de alguém pra resolver"],
   fotos: ["Fotos de campo", "Registro fotográfico por obra — base para a medição"],
-  presenca: ["Presença", "Registro diário de presença da equipe de campo"],
+  presenca: ["Efetivo diário", "Quem trabalhou hoje em cada obra — salva e manda no WhatsApp"],
+  registro: ["Registro da obra", "Tudo o que aconteceu na obra num período, pronto pra enviar"],
+  assistente: ["Assistente IA", "Pergunte sobre efetivo, atividades, insumos, fotos e pendências"],
   insumos: ["Insumos", "Materiais e compras por contrato"],
   atividades: ["Atividades", "Atividades executadas em campo"],
   faturamento: ["Faturamento", "Períodos de faturamento por contrato"],
-  trabalhadores: ["Trabalhadores", "Equipe de campo e documentos"],
+  trabalhadores: ["Funcionários", "Equipe de campo por obra"],
   obras: ["Obras", "Contratos e obras ativas da Gramar"],
   caixa: ["Caixa geral", "Entradas e saídas financeiras do dia a dia"],
   caixinha_escritorio: ["Caixinha do escritório", "Dinheiro físico para despesas pequenas"],
@@ -710,8 +755,9 @@ const VIEW_META = {
 };
 
 async function setView(view) {
-  if (!canView(view)) { toast("Você não tem acesso a essa área"); view = perms().views[0] || "dashboard"; }
+  if (!canView(view)) { toast("Você não tem acesso a essa área"); view = perms().views.find(canView) || "dashboard"; }
   currentView = view;
+  document.body.classList.toggle("sem-fab", ["assistente", "presenca"].includes(view));
   document.querySelectorAll(".nav-item").forEach(el => el.classList.toggle("active", el.dataset.view === view));
   document.getElementById("sidebar").classList.remove("open");
   const [title, sub] = VIEW_META[view];
@@ -723,6 +769,8 @@ async function setView(view) {
   try {
     if (view === "dashboard") await renderDashboard();
     else if (view === "tarefas") await renderTarefas();
+    else if (view === "registro") await renderRegistro();
+    else if (view === "assistente") await renderAssistente();
     else if (view === "pendencias") await renderPendencias();
     else if (view === "fotos") await renderFotos();
     else if (view === "presenca") await renderPresenca();
@@ -762,6 +810,7 @@ async function renderDashboard() {
 
   content.innerHTML = `
     <div class="grid-stats">
+      <div class="stat" ${go("presenca")}><div class="num">${(presencas||[]).filter(p => p.data === hojeISO() && p.presente).length}</div><div class="label">Presentes hoje</div></div>
       <div class="stat" ${go("tarefas")}><div class="num">${abertas}</div><div class="label">Tarefas abertas</div></div>
       <div class="stat" ${go("tarefas")}><div class="num" style="${atrasadas ? "color:var(--danger)" : ""}">${atrasadas}</div><div class="label">Tarefas atrasadas</div></div>
       <div class="stat" ${go("pendencias")}><div class="num">${(pendencias||[]).length}</div><div class="label">Pendências em aberto</div></div>
@@ -929,36 +978,276 @@ function openTaskModal(task) {
 /* ============================================================
    MÓDULO MEDIÇÕES — PRESENÇA
    ============================================================ */
-async function renderPresenca() {
-  const editavel = canWrite("presenca");
-  document.getElementById("topbar-actions").innerHTML = editavel ? `<button class="btn btn-primary" id="new-presenca-btn">+ Registrar presença</button>` : "";
-  if (editavel) document.getElementById("new-presenca-btn").onclick = () => openPresencaModal();
+/* ============================================================
+   EFETIVO DIÁRIO — marca quem veio em cada obra e manda no WhatsApp
+   ============================================================ */
+function abrirWhatsApp(texto) {
+  window.open("https://wa.me/?text=" + encodeURIComponent(texto), "_blank");
+}
+async function copiarTexto(texto) {
+  try { await navigator.clipboard.writeText(texto); toast("Texto copiado"); }
+  catch {
+    const t = document.createElement("textarea"); t.value = texto; document.body.appendChild(t); t.select();
+    try { document.execCommand("copy"); toast("Texto copiado"); } catch { toast("Não consegui copiar"); }
+    t.remove();
+  }
+}
+const dataPorExtenso = d => new Date(d + "T00:00:00").toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "2-digit", year: "numeric" });
 
-  const { data: rows } = await supabase.from("presencas").select("*, trabalhadores(nome)").order("data", { ascending: false }).limit(100);
+function textoEfetivo(obraNome, data, presentes, faltas) {
+  const linhas = [
+    `*EFETIVO DIÁRIO — GRAMAR*`,
+    `*Obra:* ${obraNome}`,
+    `*Data:* ${dataPorExtenso(data)}`,
+    ``,
+    `✅ *Presentes (${presentes.length})*`,
+    ...presentes.map((p, i) => `${i + 1}. ${p.nome}${p.funcao ? " — " + p.funcao : ""}`),
+  ];
+  if (faltas.length) {
+    linhas.push(``, `❌ *Faltas (${faltas.length})*`,
+      ...faltas.map((p, i) => `${i + 1}. ${p.nome}${p.obs ? " — " + p.obs : ""}`));
+  }
+  linhas.push(``, `*Total:* ${presentes.length} de ${presentes.length + faltas.length}`, `_Enviado por ${currentUser.nome} pelo Gramar Hub_`);
+  return linhas.join("\n");
+}
+
+let efetivo = null; // { obra, data, aba, lista: [{id,nome,funcao,presente,obs,bloqueado}], jaSalvo }
+
+async function renderPresenca() {
+  if (!efetivo) {
+    const prefs = lerLocal("prefs_efetivo", {});
+    const ativas = cache.contratos.filter(c => c.ativo !== false);
+    efetivo = { obra: ativas.some(c => c.id === prefs.obra) ? prefs.obra : (ativas[0]?.id || ""), data: hojeISO(), aba: "lancar" };
+  }
+  const abas = `
+    <div class="tabs" id="ef-abas">
+      <div class="tab ${efetivo.aba === "lancar" ? "active" : ""}" data-k="lancar">Lançar efetivo</div>
+      <div class="tab ${efetivo.aba === "historico" ? "active" : ""}" data-k="historico">Histórico</div>
+    </div>`;
+  const ligarAbas = () => document.querySelectorAll("#ef-abas .tab").forEach(t => t.onclick = () => { efetivo.aba = t.dataset.k; renderPresenca(); });
+
+  if (efetivo.aba === "historico") {
+    await renderPresencaHistorico();
+    document.getElementById("content").insertAdjacentHTML("afterbegin", abas);
+    return ligarAbas();
+  }
+
+  const editavel = canWrite("presenca");
+  document.getElementById("topbar-actions").innerHTML =
+    `<button class="btn btn-ghost" id="ef-resumo">Resumo do dia (todas as obras)</button>`;
+  document.getElementById("ef-resumo").onclick = () => resumoEfetivoDia(efetivo.data);
+
+  const content = document.getElementById("content");
+  const ativas = cache.contratos.filter(c => c.ativo !== false);
+  if (!ativas.length) {
+    content.innerHTML = abas + `<div class="empty-state"><div class="big">Nenhuma obra cadastrada</div>Cadastre as obras e a equipe em Cadastros pra lançar o efetivo.</div>`;
+    return ligarAbas();
+  }
+
+  // presenças já lançadas nesse dia (todas as obras)
+  let { data: doDia, error } = await supabase.from("presencas")
+    .select("*, trabalhadores(nome, funcao, contrato_id)").eq("data", efetivo.data);
+  if (error) throw error;
+  doDia = doDia || [];
+  const porTrab = Object.fromEntries(doDia.map(p => [p.trabalhador_id, p]));
+  const obraDe = p => p.contrato_id || p.trabalhadores?.contrato_id || null;
+
+  // equipe da obra + quem foi lançado nela hoje vindo de outra obra
+  const ids = new Set(cache.trabalhadores.filter(t => t.ativo && t.contrato_id === efetivo.obra).map(t => t.id));
+  doDia.filter(p => obraDe(p) === efetivo.obra).forEach(p => ids.add(p.trabalhador_id));
+  (efetivo.extras || []).forEach(id => ids.add(id));
+  const lista = [...ids].map(id => {
+    const t = cache.trabalhadores.find(x => x.id === id) || { id, nome: porTrab[id]?.trabalhadores?.nome || "—", funcao: porTrab[id]?.trabalhadores?.funcao };
+    const p = porTrab[id];
+    const emOutra = p && obraDe(p) && obraDe(p) !== efetivo.obra;
+    return {
+      id, nome: t.nome, funcao: t.funcao,
+      presente: p ? !!p.presente : true,
+      obs: p?.observacao || "",
+      bloqueado: emOutra ? (cache.contratos.find(c => c.id === obraDe(p))?.nome || "outra obra") : null,
+    };
+  }).sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+  efetivo.lista = lista;
+  const jaSalvo = lista.some(l => !l.bloqueado && porTrab[l.id]);
+
+  const foraDaLista = cache.trabalhadores.filter(t => t.ativo && !ids.has(t.id));
+  const obraOpts = ativas.map(c => `<option value="${c.id}" ${efetivo.obra === c.id ? "selected" : ""}>${escapeHtml(c.nome)}</option>`).join("");
+  content.innerHTML = abas + `
+    <div class="toolbar">
+      <div class="filters">
+        <select class="select-filter" id="ef-obra">${obraOpts}</select>
+        <input type="date" class="input-filter" id="ef-data" value="${efetivo.data}" max="${hojeISO()}" />
+      </div>
+      <div class="muted" id="ef-contagem"></div>
+    </div>
+    ${jaSalvo ? `<div class="notice ok">Efetivo deste dia já foi salvo. Pode ajustar e salvar de novo.</div>` : (lista.length ? `<div class="notice">Ainda não salvo — confira e toque em salvar.</div>` : "")}
+    ${lista.length ? `
+      ${editavel ? `<div class="row-actions" style="justify-content:flex-start;margin-bottom:10px;">
+        <button class="btn btn-ghost btn-small" id="ef-todos">Marcar todos presentes</button>
+      </div>` : ""}
+      <div class="ef-lista">
+        ${lista.map((l, i) => `
+          <div class="ef-item ${l.bloqueado ? "bloq" : ""}" data-i="${i}">
+            <div class="ef-nome"><b>${escapeHtml(l.nome)}</b>${l.funcao ? `<span class="muted"> · ${escapeHtml(l.funcao)}</span>` : ""}
+              ${l.bloqueado ? `<div class="muted">Lançado hoje em ${escapeHtml(l.bloqueado)}</div>` : ""}</div>
+            ${l.bloqueado ? "" : `
+              <div class="ef-toggle">
+                <button type="button" class="ef-btn ${l.presente ? "on-sim" : ""}" data-v="1" ${editavel ? "" : "disabled"}>Presente</button>
+                <button type="button" class="ef-btn ${!l.presente ? "on-nao" : ""}" data-v="0" ${editavel ? "" : "disabled"}>Faltou</button>
+              </div>
+              <input class="ef-obs" placeholder="Motivo (atestado, falta, folga…)" value="${escapeHtml(l.obs)}" ${l.presente ? "hidden" : ""} ${editavel ? "" : "disabled"} />`}
+          </div>`).join("")}
+      </div>` : `<div class="empty-state"><div class="big">Nenhum funcionário ativo nesta obra</div>Cadastre a equipe em Cadastros → Funcionários, ou inclua alguém de outra obra abaixo.</div>`}
+    ${editavel && foraDaLista.length ? `
+      <div class="field" style="margin-top:14px;max-width:420px;">
+        <label>Incluir funcionário de outra obra hoje</label>
+        <select id="ef-extra"><option value="">Escolher…</option>${foraDaLista.map(t => `<option value="${t.id}">${escapeHtml(t.nome)}${t.contrato_id ? " — " + escapeHtml(cache.contratos.find(c => c.id === t.contrato_id)?.nome || "") : ""}</option>`).join("")}</select>
+      </div>` : ""}
+    ${lista.length ? `
+      <div class="ef-acoes">
+        ${editavel ? `<button class="btn btn-primary" id="ef-salvar-wa">Salvar e enviar no WhatsApp</button>
+        <button class="btn btn-ghost" id="ef-salvar">Só salvar</button>` : `<button class="btn btn-primary" id="ef-wa">Enviar no WhatsApp</button>`}
+        <button class="btn btn-ghost" id="ef-copiar">Copiar texto</button>
+      </div>` : ""}
+  `;
+  ligarAbas();
+
+  const contar = () => {
+    const validos = lista.filter(l => !l.bloqueado);
+    const n = validos.filter(l => l.presente).length;
+    document.getElementById("ef-contagem").textContent = validos.length ? `${n} de ${validos.length} presentes` : "";
+  };
+  contar();
+  document.getElementById("ef-obra").onchange = e => { efetivo.obra = e.target.value; efetivo.extras = []; gravarLocal("prefs_efetivo", { obra: efetivo.obra }); renderPresenca(); };
+  document.getElementById("ef-data").onchange = e => { if (e.target.value) { efetivo.data = e.target.value; efetivo.extras = []; renderPresenca(); } };
+  document.getElementById("ef-extra")?.addEventListener("change", e => {
+    if (!e.target.value) return;
+    efetivo.extras = [...(efetivo.extras || []), e.target.value]; renderPresenca();
+  });
+  content.querySelectorAll(".ef-item:not(.bloq)").forEach(el => {
+    const l = lista[+el.dataset.i];
+    const obs = el.querySelector(".ef-obs");
+    el.querySelectorAll(".ef-btn").forEach(b => b.onclick = () => {
+      l.presente = b.dataset.v === "1";
+      el.querySelector('[data-v="1"]').classList.toggle("on-sim", l.presente);
+      el.querySelector('[data-v="0"]').classList.toggle("on-nao", !l.presente);
+      obs.hidden = l.presente;
+      if (!l.presente) obs.focus();
+      contar();
+    });
+    obs.oninput = () => { l.obs = obs.value; };
+  });
+  document.getElementById("ef-todos")?.addEventListener("click", () => {
+    lista.forEach(l => { if (!l.bloqueado) l.presente = true; });
+    content.querySelectorAll(".ef-item:not(.bloq)").forEach(el => {
+      el.querySelector('[data-v="1"]').classList.add("on-sim");
+      el.querySelector('[data-v="0"]').classList.remove("on-nao");
+      el.querySelector(".ef-obs").hidden = true;
+    });
+    contar();
+  });
+
+  const montarTexto = () => {
+    const v = lista.filter(l => !l.bloqueado);
+    return textoEfetivo(cache.contratos.find(c => c.id === efetivo.obra)?.nome || "—", efetivo.data,
+      v.filter(l => l.presente), v.filter(l => !l.presente));
+  };
+  const salvar = async () => {
+    const payload = lista.filter(l => !l.bloqueado).map(l => ({
+      trabalhador_id: l.id, data: efetivo.data, presente: l.presente,
+      observacao: l.presente ? null : (l.obs.trim() || null),
+      contrato_id: efetivo.obra, registrado_por: currentUser.id,
+    }));
+    const { error } = await supabase.from("presencas").upsert(payload, { onConflict: "trabalhador_id,data" });
+    if (error) {
+      toast(error.code === "PGRST204" || /contrato_id/.test(error.message)
+        ? "Falta atualizar o banco: rode o SQL de atualização no Supabase"
+        : "Erro ao salvar: " + error.message);
+      return false;
+    }
+    await logAudit("medicoes", "salvar_efetivo", "presenca", null, {
+      obra: efetivo.obra, data: efetivo.data, presentes: payload.filter(p => p.presente).length, total: payload.length,
+    });
+    efetivo.extras = [];
+    return true;
+  };
+  document.getElementById("ef-salvar")?.addEventListener("click", async () => { if (await salvar()) { toast("Efetivo salvo"); renderPresenca(); } });
+  document.getElementById("ef-salvar-wa")?.addEventListener("click", async () => {
+    const texto = montarTexto();
+    // abre o WhatsApp já no toque (senão o navegador do celular bloqueia) e salva em seguida
+    abrirWhatsApp(texto);
+    if (await salvar()) { toast("Efetivo salvo"); renderPresenca(); }
+  });
+  document.getElementById("ef-wa")?.addEventListener("click", () => abrirWhatsApp(montarTexto()));
+  document.getElementById("ef-copiar")?.addEventListener("click", () => copiarTexto(montarTexto()));
+}
+
+async function resumoEfetivoDia(data) {
+  const { data: rows, error } = await supabase.from("presencas")
+    .select("*, trabalhadores(nome, funcao, contrato_id)").eq("data", data);
+  if (error) return toast("Erro: " + error.message);
+  if (!rows?.length) return toast("Nenhum efetivo lançado em " + fmtDate(data));
+  const porObra = {};
+  rows.forEach(r => {
+    const id = r.contrato_id || r.trabalhadores?.contrato_id || "sem";
+    (porObra[id] = porObra[id] || { p: 0, f: [] });
+    if (r.presente) porObra[id].p++; else porObra[id].f.push(r.trabalhadores?.nome || "—");
+  });
+  const nome = id => id === "sem" ? "Sem obra" : (cache.contratos.find(c => c.id === id)?.nome || "—");
+  const ids = Object.keys(porObra).sort((a, b) => nome(a).localeCompare(nome(b), "pt-BR"));
+  const totalP = ids.reduce((s, id) => s + porObra[id].p, 0);
+  const totalF = ids.reduce((s, id) => s + porObra[id].f.length, 0);
+  const texto = [
+    `*RESUMO DO EFETIVO — GRAMAR*`,
+    `*Data:* ${dataPorExtenso(data)}`,
+    ``,
+    ...ids.map(id => `🏗️ *${nome(id)}:* ${porObra[id].p} presente(s)` + (porObra[id].f.length ? ` · faltas: ${porObra[id].f.join(", ")}` : "")),
+    ``,
+    `*Total geral:* ${totalP} presente(s)${totalF ? `, ${totalF} falta(s)` : ""}`,
+    `_Enviado por ${currentUser.nome} pelo Gramar Hub_`,
+  ].join("\n");
+  openModal(`
+    <h3>Resumo do dia</h3>
+    <pre style="white-space:pre-wrap;font-family:inherit;font-size:0.88rem;background:var(--canvas);padding:12px;border-radius:var(--radius-sm);">${escapeHtml(texto)}</pre>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="rs-fechar">Fechar</button>
+      <button class="btn btn-ghost" id="rs-copiar">Copiar</button>
+      <button class="btn btn-primary" id="rs-wa">Enviar no WhatsApp</button>
+    </div>
+  `);
+  document.getElementById("rs-fechar").onclick = closeModal;
+  document.getElementById("rs-copiar").onclick = () => copiarTexto(texto);
+  document.getElementById("rs-wa").onclick = () => abrirWhatsApp(texto);
+}
+
+async function renderPresencaHistorico() {
+  const editavel = canWrite("presenca");
+  document.getElementById("topbar-actions").innerHTML = "";
+  let { data: rows, error } = await supabase.from("presencas")
+    .select("*, trabalhadores(nome), contratos(nome)").order("data", { ascending: false }).limit(300);
+  if (error) ({ data: rows } = await supabase.from("presencas").select("*, trabalhadores(nome)").order("data", { ascending: false }).limit(300));
   const content = document.getElementById("content");
   content.innerHTML = `
-    <div class="panel">
+    <div class="panel panel-scroll">
       <table>
-        <thead><tr><th>Data</th><th>Trabalhador</th><th>Presente</th><th>Observação</th><th></th></tr></thead>
+        <thead><tr><th>Data</th><th>Funcionário</th><th>Obra</th><th>Situação</th><th>Observação</th><th></th></tr></thead>
         <tbody>
           ${(rows||[]).map(r => `
             <tr>
               <td>${fmtDate(r.data)}</td>
               <td>${escapeHtml(r.trabalhadores?.nome || "—")}</td>
-              <td><span class="status-badge ${r.presente ? 'status-aprovado' : 'status-rejeitado'}">${r.presente ? "Presente" : "Ausente"}</span></td>
+              <td>${escapeHtml(r.contratos?.nome || "—")}</td>
+              <td><span class="status-badge ${r.presente ? 'status-aprovado' : 'status-rejeitado'}">${r.presente ? "Presente" : "Faltou"}</span></td>
               <td>${escapeHtml(r.observacao || "—")}</td>
               <td>${editavel ? `<button class="btn btn-ghost edit-presenca" data-id="${r.id}">Editar</button>` : ""}</td>
             </tr>
-          `).join("") || `<tr><td colspan="5"><div class="empty-state">Nenhum registro ainda</div></td></tr>`}
+          `).join("") || `<tr><td colspan="6"><div class="empty-state">Nenhum registro ainda</div></td></tr>`}
         </tbody>
       </table>
     </div>
   `;
   content.querySelectorAll(".edit-presenca").forEach(btn => {
-    btn.onclick = async () => {
-      const { data: r } = await supabase.from("presencas").select("*").eq("id", btn.dataset.id).single();
-      openPresencaModal(r);
-    };
+    btn.onclick = () => openPresencaModal((rows || []).find(r => r.id === btn.dataset.id));
   });
 }
 
@@ -1201,19 +1490,43 @@ function openFaturamentoModal(row) {
 /* ============================================================
    MÓDULO MEDIÇÕES — TRABALHADORES
    ============================================================ */
+let trabFiltro = { obra: "", status: "ativos", busca: "" };
+
 async function renderTrabalhadores() {
   const editavel = canWrite("trabalhadores");
-  document.getElementById("topbar-actions").innerHTML = editavel ? `<button class="btn btn-primary" id="new-trab-btn">+ Novo trabalhador</button>` : "";
-  if (editavel) document.getElementById("new-trab-btn").onclick = () => openTrabalhadorModal();
+  document.getElementById("topbar-actions").innerHTML = editavel
+    ? `<button class="btn btn-ghost" id="lote-trab-btn">Vários de uma vez</button><button class="btn btn-primary" id="new-trab-btn">+ Novo funcionário</button>` : "";
+  if (editavel) {
+    document.getElementById("new-trab-btn").onclick = () => openTrabalhadorModal();
+    document.getElementById("lote-trab-btn").onclick = () => openLoteTrabalhadores();
+  }
 
-  const { data: rows } = await supabase.from("trabalhadores").select("*, contratos(nome)").order("nome");
+  const { data: todos, error } = await supabase.from("trabalhadores").select("*, contratos(nome)").order("nome");
+  if (error) throw error;
+  const f = trabFiltro;
+  const busca = f.busca.trim().toLowerCase();
+  const rows = (todos || []).filter(r =>
+    (f.status === "todos" || (f.status === "ativos" ? r.ativo : !r.ativo)) &&
+    (!f.obra || (f.obra === "sem" ? !r.contrato_id : r.contrato_id === f.obra)) &&
+    (!busca || r.nome.toLowerCase().includes(busca) || (r.funcao || "").toLowerCase().includes(busca)));
+  const obraOpts = cache.contratos.map(c => `<option value="${c.id}" ${f.obra === c.id ? "selected" : ""}>${escapeHtml(c.nome)}</option>`).join("");
   const content = document.getElementById("content");
   content.innerHTML = `
-    <div class="panel">
+    <div class="toolbar">
+      <div class="filters">
+        <input class="input-filter" id="tb-busca" placeholder="Buscar nome ou função" value="${escapeHtml(f.busca)}" />
+        <select class="select-filter" id="tb-obra"><option value="">Todas as obras</option><option value="sem" ${f.obra === "sem" ? "selected" : ""}>Sem obra</option>${obraOpts}</select>
+        <select class="select-filter" id="tb-status">
+          ${[["ativos","Ativos"],["inativos","Inativos"],["todos","Todos"]].map(([k,l]) => `<option value="${k}" ${f.status === k ? "selected" : ""}>${l}</option>`).join("")}
+        </select>
+      </div>
+      <div class="muted">${rows.length} funcionário(s)</div>
+    </div>
+    <div class="panel panel-scroll">
       <table>
-        <thead><tr><th>Nome</th><th>Função</th><th>Contrato</th><th>Status</th>${editavel ? "<th></th>" : ""}</tr></thead>
+        <thead><tr><th>Nome</th><th>Função</th><th>Obra</th><th>Status</th>${editavel ? "<th></th>" : ""}</tr></thead>
         <tbody>
-          ${(rows||[]).map(r => `
+          ${rows.map(r => `
             <tr>
               <td>${escapeHtml(r.nome)}</td>
               <td>${escapeHtml(r.funcao || "—")}</td>
@@ -1221,27 +1534,152 @@ async function renderTrabalhadores() {
               <td><span class="status-badge ${r.ativo?'status-aprovado':'status-rejeitado'}">${r.ativo ? "Ativo" : "Inativo"}</span></td>
               ${editavel ? `<td><button class="btn btn-ghost edit-trab" data-id="${r.id}">Editar</button></td>` : ""}
             </tr>
-          `).join("") || `<tr><td colspan="5"><div class="empty-state">Nenhum trabalhador cadastrado</div></td></tr>`}
+          `).join("") || `<tr><td colspan="5"><div class="empty-state"><div class="big">Nenhum funcionário aqui</div>${editavel ? "Use “Vários de uma vez” pra cadastrar a equipe inteira colando a lista." : ""}</div></td></tr>`}
         </tbody>
       </table>
     </div>
   `;
+  let t;
+  document.getElementById("tb-busca").oninput = e => { clearTimeout(t); t = setTimeout(() => { trabFiltro.busca = e.target.value; renderTrabalhadores().then(() => { const i = document.getElementById("tb-busca"); i.focus(); i.setSelectionRange(i.value.length, i.value.length); }); }, 300); };
+  document.getElementById("tb-obra").onchange = e => { trabFiltro.obra = e.target.value; renderTrabalhadores(); };
+  document.getElementById("tb-status").onchange = e => { trabFiltro.status = e.target.value; renderTrabalhadores(); };
   if (editavel) content.querySelectorAll(".edit-trab").forEach(btn => {
-    btn.onclick = async () => {
-      const { data: r } = await supabase.from("trabalhadores").select("*").eq("id", btn.dataset.id).single();
-      openTrabalhadorModal(r);
-    };
+    btn.onclick = () => openTrabalhadorModal((todos || []).find(r => r.id === btn.dataset.id));
   });
+}
+
+// "José da Silva - Roçador" | "José da Silva; Roçador" | "José da Silva<TAB>Roçador"
+function lerLinhasCadastro(texto) {
+  return texto.split(/\r?\n/).map(l => l.trim()).filter(Boolean).map(l => {
+    const partes = l.split(/\s+[-–—]\s+|;|\t/).map(x => x.trim()).filter(Boolean);
+    return { nome: partes[0] || "", extra: partes.slice(1).join(" - ") || null };
+  }).filter(x => x.nome);
+}
+
+function openLoteTrabalhadores() {
+  const obraPadrao = trabFiltro.obra && trabFiltro.obra !== "sem" ? trabFiltro.obra : "";
+  const obraOpts = cache.contratos.filter(c => c.ativo !== false).map(c => `<option value="${c.id}" ${obraPadrao === c.id ? "selected" : ""}>${escapeHtml(c.nome)}</option>`).join("");
+  openModal(`
+    <h3>Cadastrar vários funcionários</h3>
+    <div class="field"><label>Obra onde trabalham</label><select id="lt-obra"><option value="">Sem obra</option>${obraOpts}</select></div>
+    <div class="field"><label>Um por linha — se quiser, coloque a função depois de um traço</label>
+      <textarea id="lt-lista" style="min-height:200px;" placeholder="José da Silva - Roçador&#10;Maria Souza - Ajudante&#10;Carlos Lima"></textarea>
+    </div>
+    <div class="muted" id="lt-previa">Dá pra colar direto de uma planilha do Excel (coluna de nome e de função).</div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="lt-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="lt-save">Cadastrar</button>
+    </div>
+  `);
+  const lista = document.getElementById("lt-lista");
+  lista.oninput = () => {
+    const n = lerLinhasCadastro(lista.value).length;
+    document.getElementById("lt-previa").textContent = n ? `${n} funcionário(s) pra cadastrar` : "Dá pra colar direto de uma planilha do Excel (coluna de nome e de função).";
+  };
+  document.getElementById("lt-cancel").onclick = closeModal;
+  document.getElementById("lt-save").onclick = async () => {
+    const contrato_id = document.getElementById("lt-obra").value || null;
+    const itens = lerLinhasCadastro(lista.value);
+    if (!itens.length) return toast("Cole pelo menos um nome");
+    const existentes = new Set(cache.trabalhadores.map(t => t.nome.trim().toLowerCase()));
+    const novos = [], repetidos = [];
+    itens.forEach(i => {
+      const k = i.nome.toLowerCase();
+      if (existentes.has(k)) repetidos.push(i.nome); else { existentes.add(k); novos.push({ nome: i.nome, funcao: i.extra, contrato_id, ativo: true }); }
+    });
+    if (!novos.length) return toast("Todos esses nomes já estão cadastrados");
+    const btn = document.getElementById("lt-save"); btn.disabled = true;
+    const { error } = await supabase.from("trabalhadores").insert(novos);
+    btn.disabled = false;
+    if (error) return toast("Erro ao cadastrar: " + error.message);
+    await logAudit("cadastros", "criar_lote", "trabalhador", null, { quantidade: novos.length, contrato_id });
+    await loadReferenceData();
+    closeModal();
+    if (repetidos.length) alert(`${novos.length} cadastrado(s).\n\nJá existiam e foram pulados:\n${repetidos.join("\n")}`);
+    else toast(`${novos.length} funcionário(s) cadastrado(s)`);
+    trabFiltro.obra = contrato_id || ""; renderTrabalhadores();
+  };
+}
+
+async function renderObras() {
+  const editavel = canWrite("obras");
+  document.getElementById("topbar-actions").innerHTML = editavel
+    ? `<button class="btn btn-ghost" id="lote-obra-btn">Várias de uma vez</button><button class="btn btn-primary" id="new-obra-btn">+ Nova obra</button>` : "";
+  if (editavel) {
+    document.getElementById("new-obra-btn").onclick = () => openObraModal();
+    document.getElementById("lote-obra-btn").onclick = () => openLoteObras();
+  }
+
+  const [{ data: rows, error }, { data: trabs }] = await Promise.all([
+    supabase.from("contratos").select("*").order("nome"),
+    supabase.from("trabalhadores").select("contrato_id").eq("ativo", true),
+  ]);
+  if (error) throw error;
+  const equipe = {};
+  (trabs || []).forEach(t => { if (t.contrato_id) equipe[t.contrato_id] = (equipe[t.contrato_id] || 0) + 1; });
+  const content = document.getElementById("content");
+  content.innerHTML = `
+    <div class="panel panel-scroll">
+      <table>
+        <thead><tr><th>Nome da obra</th><th>Cliente</th><th>Equipe ativa</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          ${(rows||[]).map(r => `
+            <tr>
+              <td>${escapeHtml(r.nome)}</td>
+              <td>${escapeHtml(r.cliente || "—")}</td>
+              <td>${equipe[r.id] || 0}</td>
+              <td><span class="status-badge ${r.ativo?'status-aprovado':'status-rejeitado'}">${r.ativo ? "Ativa" : "Inativa"}</span></td>
+              <td><div class="row-actions">
+                ${canView("trabalhadores") ? `<button class="btn btn-ghost btn-small ver-equipe" data-id="${r.id}">Equipe</button>` : ""}
+                ${editavel ? `<button class="btn btn-ghost btn-small edit-obra" data-id="${r.id}">Editar</button>` : ""}
+              </div></td>
+            </tr>
+          `).join("") || `<tr><td colspan="5"><div class="empty-state"><div class="big">Nenhuma obra cadastrada ainda</div>${editavel ? "Use “Várias de uma vez” pra colar a lista de obras." : ""}</div></td></tr>`}
+        </tbody>
+      </table>
+    </div>
+  `;
+  content.querySelectorAll(".ver-equipe").forEach(b => b.onclick = () => { trabFiltro = { obra: b.dataset.id, status: "ativos", busca: "" }; setView("trabalhadores"); });
+  if (editavel) content.querySelectorAll(".edit-obra").forEach(btn => {
+    btn.onclick = () => openObraModal((rows || []).find(r => r.id === btn.dataset.id));
+  });
+}
+
+function openLoteObras() {
+  openModal(`
+    <h3>Cadastrar várias obras</h3>
+    <div class="field"><label>Uma por linha — se quiser, coloque o cliente depois de um traço</label>
+      <textarea id="lo-lista" style="min-height:200px;" placeholder="Parque Ecológico - Prefeitura de São Luís&#10;Residencial Jardins - MRV&#10;Av. Litorânea"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="lo-cancel">Cancelar</button>
+      <button class="btn btn-primary" id="lo-save">Cadastrar</button>
+    </div>
+  `);
+  document.getElementById("lo-cancel").onclick = closeModal;
+  document.getElementById("lo-save").onclick = async () => {
+    const itens = lerLinhasCadastro(document.getElementById("lo-lista").value);
+    if (!itens.length) return toast("Cole pelo menos uma obra");
+    const existentes = new Set(cache.contratos.map(c => c.nome.trim().toLowerCase()));
+    const novos = itens.filter(i => !existentes.has(i.nome.toLowerCase())).map(i => ({ nome: i.nome, cliente: i.extra, ativo: true }));
+    if (!novos.length) return toast("Essas obras já estão cadastradas");
+    const { error } = await supabase.from("contratos").insert(novos);
+    if (error) return toast("Erro ao cadastrar: " + error.message);
+    await logAudit("obras", "criar_lote", "contrato", null, { quantidade: novos.length });
+    await loadReferenceData();
+    closeModal(); toast(`${novos.length} obra(s) cadastrada(s)`); renderObras();
+  };
 }
 
 function openTrabalhadorModal(row) {
   const isEdit = !!row;
-  const options = cache.contratos.map(c => `<option value="${c.id}" ${row?.contrato_id===c.id?"selected":""}>${escapeHtml(c.nome)}</option>`).join("");
+  const obraSel = row ? row.contrato_id : (trabFiltro.obra !== "sem" ? trabFiltro.obra : "");
+  const options = cache.contratos.map(c => `<option value="${c.id}" ${obraSel===c.id?"selected":""}>${escapeHtml(c.nome)}</option>`).join("");
   openModal(`
-    <h3>${isEdit ? "Editar trabalhador" : "Novo trabalhador"}</h3>
+    <h3>${isEdit ? "Editar funcionário" : "Novo funcionário"}</h3>
     <div class="field"><label>Nome</label><input id="tr-nome" value="${row ? escapeHtml(row.nome) : ""}" /></div>
     <div class="field"><label>Função</label><input id="tr-funcao" value="${escapeHtml(row?.funcao || "")}" /></div>
-    <div class="field"><label>Contrato</label><select id="tr-contrato"><option value="">—</option>${options}</select></div>
+    <div class="field"><label>Obra</label><select id="tr-contrato"><option value="">—</option>${options}</select></div>
     <div class="field"><label><input type="checkbox" id="tr-ativo" ${row ? (row.ativo?"checked":"") : "checked"} /> Ativo</label></div>
     <div class="modal-actions">
       ${isEdit ? `<button class="btn btn-danger-outline" id="tr-del">Excluir</button>` : ""}
@@ -1275,38 +1713,6 @@ function openTrabalhadorModal(row) {
 /* ============================================================
    OBRAS / CONTRATOS
    ============================================================ */
-async function renderObras() {
-  const editavel = canWrite("obras");
-  document.getElementById("topbar-actions").innerHTML = editavel ? `<button class="btn btn-primary" id="new-obra-btn">+ Nova obra</button>` : "";
-  if (editavel) document.getElementById("new-obra-btn").onclick = () => openObraModal();
-
-  const { data: rows } = await supabase.from("contratos").select("*").order("nome");
-  const content = document.getElementById("content");
-  content.innerHTML = `
-    <div class="panel">
-      <table>
-        <thead><tr><th>Nome da obra</th><th>Cliente</th><th>Status</th>${editavel ? "<th></th>" : ""}</tr></thead>
-        <tbody>
-          ${(rows||[]).map(r => `
-            <tr>
-              <td>${escapeHtml(r.nome)}</td>
-              <td>${escapeHtml(r.cliente || "—")}</td>
-              <td><span class="status-badge ${r.ativo?'status-aprovado':'status-rejeitado'}">${r.ativo ? "Ativa" : "Inativa"}</span></td>
-              ${editavel ? `<td><button class="btn btn-ghost edit-obra" data-id="${r.id}">Editar</button></td>` : ""}
-            </tr>
-          `).join("") || `<tr><td colspan="4"><div class="empty-state">Nenhuma obra cadastrada ainda</div></td></tr>`}
-        </tbody>
-      </table>
-    </div>
-  `;
-  if (editavel) content.querySelectorAll(".edit-obra").forEach(btn => {
-    btn.onclick = async () => {
-      const { data: r } = await supabase.from("contratos").select("*").eq("id", btn.dataset.id).single();
-      openObraModal(r);
-    };
-  });
-}
-
 function openObraModal(row) {
   const isEdit = !!row;
   openModal(`
@@ -2295,9 +2701,8 @@ async function urlsAssinadas(caminhos) {
   return mapa;
 }
 
-async function baixarZipFotos(rows) {
+async function baixarZipFotos(rows, btn = document.getElementById("ff-zip")) {
   if (!rows.length) return toast("Nenhuma foto no filtro");
-  const btn = document.getElementById("ff-zip");
   const rotulo = btn.textContent;
   btn.disabled = true;
   try {
@@ -2387,6 +2792,345 @@ ${Object.entries(porObra).map(([obra, fs]) => `
 }
 
 atualizarBadgeFotos();
+
+/* ============================================================
+   REGISTRO DA OBRA — tudo de uma obra num período, pronto pra enviar
+   ============================================================ */
+let registroFiltro = null;
+let registroDados = null;
+
+function periodoRapido(k) {
+  const h = new Date(); const d = n => { const x = new Date(h); x.setDate(x.getDate() + n); return x; };
+  if (k === "hoje") return [hojeISO(h), hojeISO(h)];
+  if (k === "ontem") return [hojeISO(d(-1)), hojeISO(d(-1))];
+  if (k === "semana") { const dow = (h.getDay() + 6) % 7; return [hojeISO(d(-dow)), hojeISO(h)]; }
+  if (k === "mes") return [hojeISO(new Date(h.getFullYear(), h.getMonth(), 1)), hojeISO(h)];
+  if (k === "mes_passado") return [hojeISO(new Date(h.getFullYear(), h.getMonth() - 1, 1)), hojeISO(new Date(h.getFullYear(), h.getMonth(), 0))];
+}
+
+async function carregarRegistro(f) {
+  const porObra = q => f.obra ? q.eq("contrato_id", f.obra) : q;
+  const [pres, ativ, ins, pend, fotos] = await Promise.all([
+    supabase.from("presencas").select("*, trabalhadores(nome, funcao, contrato_id)").gte("data", f.de).lte("data", f.ate).order("data").limit(5000),
+    porObra(supabase.from("atividades").select("*, contratos(nome)")).gte("data", f.de).lte("data", f.ate).order("data").limit(1000),
+    porObra(supabase.from("insumos").select("*, contratos(nome)")).gte("data", f.de).lte("data", f.ate).order("data").limit(1000),
+    porObra(supabase.from("pendencias").select("*, contratos(nome)")).order("criado_em", { ascending: false }).limit(500),
+    porObra(supabase.from("fotos_campo").select("*, contratos(nome), usuarios(nome)")).gte("data", f.de).lte("data", f.ate).order("tirada_em").limit(2000),
+  ]);
+  for (const r of [pres, ativ, ins, pend, fotos]) if (r.error) throw r.error;
+  const obraDaPresenca = p => p.contrato_id || p.trabalhadores?.contrato_id || null;
+  const presencas = (pres.data || []).filter(p => !f.obra || obraDaPresenca(p) === f.obra);
+  const fimDia = f.ate + "T23:59:59";
+  const pendencias = (pend.data || []).filter(p =>
+    !p.resolvida || (p.resolvida_em && p.resolvida_em >= f.de && p.resolvida_em <= fimDia) || (p.criado_em >= f.de && p.criado_em <= fimDia));
+
+  const dias = {};
+  presencas.forEach(p => {
+    const d = (dias[p.data] = dias[p.data] || { presentes: [], faltas: [] });
+    const item = { nome: p.trabalhadores?.nome || "—", funcao: p.trabalhadores?.funcao, obs: p.observacao, obra: obraDaPresenca(p) };
+    (p.presente ? d.presentes : d.faltas).push(item);
+  });
+  const homensDia = presencas.filter(p => p.presente).length;
+  const diasTrab = Object.values(dias).filter(d => d.presentes.length).length;
+  return {
+    dias, homensDia, diasTrab,
+    faltas: presencas.filter(p => !p.presente).length,
+    atividades: ativ.data || [], insumos: ins.data || [], pendencias, fotos: fotos.data || [],
+    totalInsumos: (ins.data || []).reduce((s, r) => s + Number(r.valor_total || 0), 0),
+  };
+}
+
+async function renderRegistro() {
+  if (!registroFiltro) {
+    const [de, ate] = periodoRapido("mes");
+    const ativas = cache.contratos.filter(c => c.ativo !== false);
+    const prefs = lerLocal("prefs_efetivo", {});
+    registroFiltro = { obra: ativas.some(c => c.id === prefs.obra) ? prefs.obra : (ativas[0]?.id || ""), de, ate };
+  }
+  const f = registroFiltro;
+  document.getElementById("topbar-actions").innerHTML = "";
+  const content = document.getElementById("content");
+  const R = registroDados = await carregarRegistro(f);
+  const obraNome = f.obra ? (cache.contratos.find(c => c.id === f.obra)?.nome || "—") : "Todas as obras";
+
+  let thumbs = {};
+  const amostra = R.fotos.slice(-24).reverse();
+  if (amostra.length) {
+    const { data: s } = await supabase.storage.from(FOTO_BUCKET).createSignedUrls(amostra.map(r => r.thumb_path), 3600);
+    (s || []).forEach((x, j) => { if (x.signedUrl) thumbs[amostra[j].id] = x.signedUrl; });
+  }
+  const diasOrd = Object.keys(R.dias).sort().reverse();
+  const nomeObra = id => cache.contratos.find(c => c.id === id)?.nome || "—";
+  const obraOpts = cache.contratos.map(c => `<option value="${c.id}" ${f.obra === c.id ? "selected" : ""}>${escapeHtml(c.nome)}</option>`).join("");
+  const abertas = R.pendencias.filter(p => !p.resolvida);
+
+  content.innerHTML = `
+    <div class="toolbar">
+      <div class="filters">
+        <select class="select-filter" id="rg-obra"><option value="">Todas as obras</option>${obraOpts}</select>
+        <input type="date" class="input-filter" id="rg-de" value="${f.de}" />
+        <input type="date" class="input-filter" id="rg-ate" value="${f.ate}" />
+      </div>
+    </div>
+    <div class="chips" style="margin-bottom:16px;">
+      ${[["hoje","Hoje"],["ontem","Ontem"],["semana","Esta semana"],["mes","Este mês"],["mes_passado","Mês passado"]].map(([k,l]) => {
+        const [a, b] = periodoRapido(k); return `<button class="chip ${a === f.de && b === f.ate ? "on" : ""}" data-p="${k}">${l}</button>`; }).join("")}
+    </div>
+    <div class="row-actions" style="justify-content:flex-start;margin-bottom:16px;">
+      <button class="btn btn-primary" id="rg-pdf" style="width:auto;margin:0;">Gerar PDF completo</button>
+      <button class="btn btn-ghost" id="rg-wa">Resumo no WhatsApp</button>
+      <button class="btn btn-ghost" id="rg-zip" ${R.fotos.length ? "" : "disabled"}>Baixar fotos (ZIP)</button>
+    </div>
+    <div class="grid-stats">
+      <div class="stat"><div class="num">${R.diasTrab}</div><div class="label">Dias com equipe</div></div>
+      <div class="stat"><div class="num">${R.homensDia}</div><div class="label">Homens-dia</div></div>
+      <div class="stat"><div class="num">${R.diasTrab ? (R.homensDia / R.diasTrab).toFixed(1).replace(".", ",") : "0"}</div><div class="label">Média por dia</div></div>
+      <div class="stat"><div class="num" style="${R.faltas ? "color:var(--danger)" : ""}">${R.faltas}</div><div class="label">Faltas</div></div>
+      <div class="stat"><div class="num">${R.atividades.length}</div><div class="label">Atividades</div></div>
+      <div class="stat"><div class="num">${R.fotos.length}</div><div class="label">Fotos</div></div>
+      <div class="stat"><div class="num">${fmtMoney(R.totalInsumos)}</div><div class="label">Insumos</div></div>
+      <div class="stat"><div class="num" style="${abertas.length ? "color:var(--clay)" : ""}">${abertas.length}</div><div class="label">Pendências abertas</div></div>
+    </div>
+
+    <div class="panel panel-scroll">
+      <h3 style="margin-bottom:12px;">Efetivo por dia</h3>
+      ${diasOrd.length ? `<table>
+        <thead><tr><th>Dia</th><th>Presentes</th><th>Faltas</th></tr></thead>
+        <tbody>${diasOrd.map(d => `
+          <tr>
+            <td style="white-space:nowrap;">${new Date(d + "T00:00:00").toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "2-digit" })}</td>
+            <td><details><summary><b>${R.dias[d].presentes.length}</b></summary>
+              <div class="muted">${R.dias[d].presentes.map(p => escapeHtml(p.nome) + (!f.obra ? ` (${escapeHtml(nomeObra(p.obra))})` : "")).join(", ")}</div></details></td>
+            <td>${R.dias[d].faltas.map(p => escapeHtml(p.nome) + (p.obs ? ` <span class="muted">— ${escapeHtml(p.obs)}</span>` : "")).join("<br>") || "—"}</td>
+          </tr>`).join("")}</tbody>
+      </table>` : `<div class="muted">Nenhum efetivo lançado no período.</div>`}
+    </div>
+
+    <div class="two-col">
+      <div class="panel">
+        <h3 style="margin-bottom:12px;">Atividades</h3>
+        ${R.atividades.length ? R.atividades.slice().reverse().map(a => `
+          <div style="padding:8px 0;border-bottom:1px solid var(--line);">
+            <div class="muted">${fmtDate(a.data)}${!f.obra ? " · " + escapeHtml(a.contratos?.nome || "—") : ""}</div>
+            ${escapeHtml(a.descricao)}
+          </div>`).join("") : `<div class="muted">Nenhuma atividade registrada.</div>`}
+      </div>
+      <div class="panel">
+        <h3 style="margin-bottom:12px;">Pendências</h3>
+        ${R.pendencias.length ? R.pendencias.map(p => `
+          <div style="padding:8px 0;border-bottom:1px solid var(--line);">
+            <span class="status-badge ${p.resolvida ? "status-aprovado" : "status-pendente"}">${p.resolvida ? "resolvida" : "aberta"}</span>
+            ${escapeHtml(p.titulo)}${p.resolucao ? `<div class="muted">${escapeHtml(p.resolucao)}</div>` : ""}
+          </div>`).join("") : `<div class="muted">Nenhuma pendência.</div>`}
+      </div>
+    </div>
+
+    <div class="panel panel-scroll">
+      <h3 style="margin-bottom:12px;">Insumos · ${fmtMoney(R.totalInsumos)}</h3>
+      ${R.insumos.length ? `<table>
+        <thead><tr><th>Data</th><th>Descrição</th><th>Qtd</th><th>Valor</th><th>Status</th></tr></thead>
+        <tbody>${R.insumos.slice().reverse().map(i => `
+          <tr><td>${fmtDate(i.data)}</td><td>${escapeHtml(i.descricao)}</td><td>${i.quantidade ?? "—"} ${escapeHtml(i.unidade || "")}</td>
+          <td>${fmtMoney(i.valor_total)}</td><td><span class="status-badge status-${i.status}">${i.status}</span></td></tr>`).join("")}</tbody>
+      </table>` : `<div class="muted">Nenhum insumo no período.</div>`}
+    </div>
+
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;flex-wrap:wrap;">
+        <h3>Fotos · ${R.fotos.length}</h3>
+        ${R.fotos.length && canView("fotos") ? `<button class="btn btn-ghost btn-small" id="rg-fotos">Ver todas</button>` : ""}
+      </div>
+      ${amostra.length ? `<div class="foto-grid">${amostra.map(r => `
+        <div class="foto-thumb">${thumbs[r.id] ? `<img src="${thumbs[r.id]}" loading="lazy" alt="">` : ""}<span class="tag">${escapeHtml(catLabel(r.categoria))} · ${fmtDate(r.data).slice(0, 5)}</span></div>`).join("")}</div>`
+        : `<div class="muted">Nenhuma foto no período. Use o botão da câmera pra registrar.</div>`}
+    </div>
+  `;
+  const recarregar = () => {
+    registroFiltro = { obra: document.getElementById("rg-obra").value, de: document.getElementById("rg-de").value || f.de, ate: document.getElementById("rg-ate").value || f.ate };
+    renderRegistro();
+  };
+  ["rg-obra", "rg-de", "rg-ate"].forEach(id => document.getElementById(id).onchange = recarregar);
+  content.querySelectorAll(".chip[data-p]").forEach(c => c.onclick = () => { const [de, ate] = periodoRapido(c.dataset.p); registroFiltro = { ...f, de, ate }; renderRegistro(); });
+  document.getElementById("rg-fotos")?.addEventListener("click", () => abrirFotosDoPeriodo(f.obra || "", f.de, f.ate));
+  document.getElementById("rg-zip").onclick = e => { fotosFiltro = { obra: f.obra || "", de: f.de, ate: f.ate, categoria: "" }; baixarZipFotos(R.fotos, e.currentTarget); };
+  document.getElementById("rg-wa").onclick = () => abrirWhatsApp(textoRegistro(obraNome, f, R));
+  document.getElementById("rg-pdf").onclick = () => pdfRegistro(obraNome, f, R);
+}
+
+function textoRegistro(obraNome, f, R) {
+  const periodo = f.de === f.ate ? fmtDate(f.de) : `${fmtDate(f.de)} a ${fmtDate(f.ate)}`;
+  const abertas = R.pendencias.filter(p => !p.resolvida);
+  const linhas = [
+    `*REGISTRO DA OBRA — GRAMAR*`,
+    `*Obra:* ${obraNome}`,
+    `*Período:* ${periodo}`,
+    ``,
+    `👷 *Efetivo:* ${R.homensDia} homens-dia em ${R.diasTrab} dia(s)` + (R.diasTrab ? ` (média ${(R.homensDia / R.diasTrab).toFixed(1).replace(".", ",")}/dia)` : ""),
+    `❌ *Faltas:* ${R.faltas}`,
+    `🛠️ *Atividades:* ${R.atividades.length}`,
+    ...R.atividades.slice(-8).map(a => `   • ${fmtDate(a.data).slice(0, 5)} — ${a.descricao}`),
+    `📦 *Insumos:* ${R.insumos.length} item(ns) · ${fmtMoney(R.totalInsumos)}`,
+    `📷 *Fotos:* ${R.fotos.length}`,
+    `⚠️ *Pendências abertas:* ${abertas.length}`,
+    ...abertas.slice(0, 8).map(p => `   • ${p.titulo}`),
+    ``,
+    `_Gerado por ${currentUser.nome} pelo Gramar Hub_`,
+  ];
+  return linhas.join("\n");
+}
+
+async function pdfRegistro(obraNome, f, R) {
+  const janela = window.open("", "_blank");
+  if (!janela) return toast("Libere pop-ups deste site pra gerar o PDF");
+  janela.document.write("<p style='font-family:sans-serif;padding:20px'>Montando o registro…</p>");
+  try {
+    const fotos = R.fotos;
+    const urls = fotos.length ? await urlsAssinadas(fotos.map(r => r.storage_path)) : {};
+    const esc = escapeHtml;
+    const periodo = f.de === f.ate ? fmtDate(f.de) : `${fmtDate(f.de)} a ${fmtDate(f.ate)}`;
+    const nomeObra = id => cache.contratos.find(c => c.id === id)?.nome || "—";
+    const dias = Object.keys(R.dias).sort();
+    const html = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>Registro — ${esc(obraNome)}</title>
+<style>
+  body{font-family:"IBM Plex Sans",Arial,sans-serif;color:#16241C;margin:24px;font-size:12px;}
+  h1{font-size:20px;margin:0 0 4px;} .sub{color:#555;margin-bottom:16px;}
+  h2{font-size:15px;margin:22px 0 8px;border-bottom:2px solid #2F5233;padding-bottom:4px;break-after:avoid;}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px;}
+  .kpi{border:1px solid #ddd;border-radius:6px;padding:8px;} .kpi b{display:block;font-size:17px;color:#213A26;}
+  table{width:100%;border-collapse:collapse;} th,td{border-bottom:1px solid #e3e0d3;padding:5px 6px;text-align:left;vertical-align:top;}
+  th{color:#555;font-size:11px;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  figure{margin:0;break-inside:avoid;border:1px solid #ddd;border-radius:6px;overflow:hidden;}
+  figure img{width:100%;height:240px;object-fit:cover;display:block;background:#eee;}
+  figcaption{font-size:10px;padding:5px 7px;}
+  .barra{margin-bottom:14px;} .barra button{padding:8px 14px;font-size:14px;}
+  @media print{.barra{display:none;} body{margin:8mm;} @page{size:A4;margin:10mm;}}
+</style></head><body>
+<div class="barra"><button onclick="print()">Imprimir / salvar em PDF</button></div>
+<h1>Registro da obra — ${esc(obraNome)}</h1>
+<div class="sub">Gramar Construções e Soluções Ambientais · Período ${periodo} · gerado em ${new Date().toLocaleString("pt-BR")} por ${esc(currentUser.nome)}</div>
+<div class="kpis">
+  <div class="kpi"><b>${R.diasTrab}</b>dias com equipe</div>
+  <div class="kpi"><b>${R.homensDia}</b>homens-dia</div>
+  <div class="kpi"><b>${R.faltas}</b>faltas</div>
+  <div class="kpi"><b>${R.fotos.length}</b>fotos</div>
+</div>
+<h2>Efetivo por dia</h2>
+${dias.length ? `<table><thead><tr><th>Dia</th><th>Qtd</th><th>Presentes</th><th>Faltas</th></tr></thead><tbody>
+${dias.map(d => `<tr><td style="white-space:nowrap">${new Date(d + "T00:00:00").toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "2-digit" })}</td>
+<td>${R.dias[d].presentes.length}</td>
+<td>${R.dias[d].presentes.map(p => esc(p.nome) + (!f.obra ? ` (${esc(nomeObra(p.obra))})` : "")).join(", ")}</td>
+<td>${R.dias[d].faltas.map(p => esc(p.nome) + (p.obs ? " — " + esc(p.obs) : "")).join("<br>") || "—"}</td></tr>`).join("")}
+</tbody></table>` : "<p>Nenhum efetivo lançado.</p>"}
+<h2>Atividades (${R.atividades.length})</h2>
+${R.atividades.length ? `<table><tbody>${R.atividades.map(a => `<tr><td style="white-space:nowrap">${fmtDate(a.data)}</td>${!f.obra ? `<td>${esc(a.contratos?.nome || "—")}</td>` : ""}<td>${esc(a.descricao)}</td></tr>`).join("")}</tbody></table>` : "<p>Nenhuma.</p>"}
+<h2>Insumos (${fmtMoney(R.totalInsumos)})</h2>
+${R.insumos.length ? `<table><thead><tr><th>Data</th><th>Descrição</th><th>Qtd</th><th>Valor</th><th>Status</th></tr></thead><tbody>${R.insumos.map(i => `<tr><td>${fmtDate(i.data)}</td><td>${esc(i.descricao)}</td><td>${i.quantidade ?? "—"} ${esc(i.unidade || "")}</td><td>${fmtMoney(i.valor_total)}</td><td>${esc(i.status)}</td></tr>`).join("")}</tbody></table>` : "<p>Nenhum.</p>"}
+<h2>Pendências</h2>
+${R.pendencias.length ? `<table><tbody>${R.pendencias.map(p => `<tr><td>${p.resolvida ? "Resolvida" : "<b>Aberta</b>"}</td><td>${esc(p.titulo)}${p.resolucao ? "<br><i>" + esc(p.resolucao) + "</i>" : ""}</td><td>${p.prazo ? fmtDate(p.prazo) : ""}</td></tr>`).join("")}</tbody></table>` : "<p>Nenhuma.</p>"}
+<h2>Registro fotográfico (${fotos.length})</h2>
+${fotos.length ? `<div class="grid">${fotos.map((r, i) => `<figure><img src="${urls[r.storage_path] || ""}"><figcaption><b>${i + 1}. ${esc(catLabel(r.categoria))}</b>${r.legenda ? " — " + esc(r.legenda) : ""}${!f.obra ? " · " + esc(r.contratos?.nome || "Sem obra") : ""}<br>${new Date(r.tirada_em).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })} · ${esc(r.usuarios?.nome || "")}</figcaption></figure>`).join("")}</div>` : "<p>Nenhuma foto.</p>"}
+</body></html>`;
+    janela.document.open(); janela.document.write(html); janela.document.close();
+    await logAudit("registro", "gerar_pdf", "contrato", f.obra || null, f);
+  } catch (e) {
+    janela.close(); toast("Não consegui montar o registro: " + (e.message || e));
+  }
+}
+
+/* ============================================================
+   ASSISTENTE IA — perguntas em português sobre os dados das obras
+   (a resposta vem da função "assistente" no Supabase, que consulta o banco
+    com o login de quem pergunta)
+   ============================================================ */
+let assistenteHist = [];
+let assistenteOcupado = false;
+
+function formatarResposta(t) {
+  return escapeHtml(t)
+    .replace(/\*\*(.+?)\*\*/g, "<b>$1</b>")
+    .replace(/(^|[\s(])\*([^*\n]+)\*(?=[\s).,:;!?]|$)/g, "$1<b>$2</b>")
+    .replace(/\n/g, "<br>");
+}
+
+async function renderAssistente() {
+  document.getElementById("topbar-actions").innerHTML = assistenteHist.length ? `<button class="btn btn-ghost" id="ia-limpar">Nova conversa</button>` : "";
+  document.getElementById("ia-limpar")?.addEventListener("click", () => { assistenteHist = []; renderAssistente(); });
+  const sugestoes = [
+    "Quem faltou hoje?",
+    "Resumo do efetivo desta semana por obra",
+    "Quais pendências estão abertas?",
+    "O que foi feito na última semana em cada obra?",
+    "Quantas fotos foram tiradas este mês por obra?",
+  ];
+  const content = document.getElementById("content");
+  content.innerHTML = `
+    <div class="ia-wrap">
+      <div class="ia-msgs" id="ia-msgs">
+        ${assistenteHist.length ? "" : `
+          <div class="ia-boasvindas">
+            <div class="big">Olá, ${escapeHtml(currentUser.nome.split(" ")[0])}! O que você quer saber das obras?</div>
+            <div class="muted">Eu consulto efetivo, atividades, insumos, fotos, pendências e tarefas. Só leio — não altero nada.</div>
+            <div class="chips" style="justify-content:center;margin-top:14px;">${sugestoes.map(s => `<button class="chip ia-sug">${escapeHtml(s)}</button>`).join("")}</div>
+          </div>`}
+      </div>
+      <form class="ia-form" id="ia-form">
+        <textarea id="ia-input" rows="1" placeholder="Pergunte algo… ex.: quantas pessoas trabalharam no Parque Ecológico essa semana?"></textarea>
+        <button class="btn btn-primary" id="ia-enviar" type="submit">Enviar</button>
+      </form>
+    </div>
+  `;
+  const msgs = document.getElementById("ia-msgs");
+  const desenhar = () => {
+    if (!assistenteHist.length) return;
+    msgs.innerHTML = assistenteHist.map(m => `
+      <div class="ia-msg ${m.role}">${m.role === "user" ? escapeHtml(m.content).replace(/\n/g, "<br>") : formatarResposta(m.content)}
+        ${m.role === "assistant" && !m.erro ? `<div class="ia-msg-acoes"><button class="btn btn-ghost btn-small ia-wa" data-t="${encodeURIComponent(m.content)}">WhatsApp</button><button class="btn btn-ghost btn-small ia-copiar" data-t="${encodeURIComponent(m.content)}">Copiar</button></div>` : ""}
+      </div>`).join("") + (assistenteOcupado ? `<div class="ia-msg assistant ia-pensando">Consultando os dados…</div>` : "");
+    msgs.querySelectorAll(".ia-wa").forEach(b => b.onclick = () => abrirWhatsApp(decodeURIComponent(b.dataset.t)));
+    msgs.querySelectorAll(".ia-copiar").forEach(b => b.onclick = () => copiarTexto(decodeURIComponent(b.dataset.t)));
+    msgs.scrollTop = msgs.scrollHeight;
+  };
+  desenhar();
+  const input = document.getElementById("ia-input");
+  input.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); document.getElementById("ia-form").requestSubmit(); } });
+  input.addEventListener("input", () => { input.style.height = "auto"; input.style.height = Math.min(input.scrollHeight, 140) + "px"; });
+
+  const perguntar = async (texto) => {
+    texto = texto.trim();
+    if (!texto || assistenteOcupado) return;
+    assistenteHist.push({ role: "user", content: texto });
+    assistenteOcupado = true;
+    input.value = ""; input.style.height = "auto";
+    document.getElementById("ia-enviar").disabled = true;
+    desenhar();
+    let resposta, erro = false;
+    try {
+      const { data, error } = await supabase.functions.invoke("assistente", {
+        body: { mensagens: assistenteHist.filter(m => !m.erro).slice(-12).map(({ role, content }) => ({ role, content })) },
+      });
+      if (error) {
+        let det = null;
+        try { det = await error.context?.json(); } catch {}
+        const status = error.context?.status;
+        throw new Error(det?.erro || (status === 404 ? "O assistente ainda não foi ativado no Supabase (falta publicar a função “assistente”)." : error.message));
+      }
+      resposta = data?.resposta || "Não consegui responder agora.";
+    } catch (e) {
+      resposta = "⚠️ " + (e.message || "Não consegui falar com o assistente."); erro = true;
+    }
+    assistenteHist.push({ role: "assistant", content: resposta, erro });
+    assistenteOcupado = false;
+    if (currentView === "assistente") {
+      document.getElementById("ia-enviar").disabled = false;
+      document.getElementById("topbar-actions").innerHTML = `<button class="btn btn-ghost" id="ia-limpar">Nova conversa</button>`;
+      document.getElementById("ia-limpar").onclick = () => { assistenteHist = []; renderAssistente(); };
+      desenhar();
+    }
+  };
+  document.getElementById("ia-form").onsubmit = e => { e.preventDefault(); perguntar(input.value); };
+  content.querySelectorAll(".ia-sug").forEach(b => b.onclick = () => perguntar(b.textContent));
+}
 
 /* ============================================================
    TABELA GENÉRICA DE STATUS (insumos/atividades)
