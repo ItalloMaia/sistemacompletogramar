@@ -11,9 +11,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/4.4.4/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="manifest" href="manifest.json">
-<link rel="icon" type="image/svg+xml" href="icons/icon.svg">
-<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Gramar Hub">
@@ -448,7 +448,7 @@ table.mapa .mp-nome{text-align:left;min-width:170px;position:sticky;left:0;backg
 <!-- ================= LOGIN ================= -->
 <div id="login-screen">
   <div class="login-card">
-    <img src="icons/icon-192.png" alt="" class="login-logo" width="72" height="72">
+    <img src="icon-192.png" alt="" class="login-logo" width="72" height="72">
     <div class="brand serif">Gramar Hub</div>
     <div class="brand-sub">Plano de ação, efetivo e obras em um só lugar</div>
     <form id="login-form">
@@ -3699,7 +3699,8 @@ async function renderAssistente() {
         let det = null;
         try { det = await error.context?.json(); } catch {}
         const status = error.context?.status;
-        throw new Error(det?.erro || (status === 404 ? "O assistente ainda não foi ativado no Supabase (falta publicar a função “assistente”)." : error.message));
+        const naoPublicada = status === 404 || error.name === "FunctionsFetchError" || /failed to send/i.test(error.message || "");
+        throw new Error(det?.erro || (naoPublicada ? (navigator.onLine ? "O assistente ainda não está ligado. Falta publicar a função “assistente” no Supabase e colocar a chave da IA (ANTHROPIC_API_KEY)." : "Sem internet agora. Tente de novo quando tiver sinal.") : error.message));
       }
       resposta = data?.resposta || "Não consegui responder agora.";
     } catch (e) {

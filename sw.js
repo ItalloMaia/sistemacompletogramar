@@ -3,11 +3,11 @@
    2) recebe as notificações push (tarefas e pendências)
    Rede primeiro: com internet sempre carrega a versão nova; o cache só entra quando está offline. */
 
-const CACHE = "gramar-hub-v3";
+const CACHE = "gramar-hub-v4";
 const LIBS = ["cdn.jsdelivr.net", "cdnjs.cloudflare.com", "fonts.googleapis.com", "fonts.gstatic.com"];
 
 self.addEventListener("install", (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(["./", "./index.html", "./manifest.json", "./icons/icon-192.png", "./icons/icon-512.png"])).catch(() => {}));
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png"])).catch(() => {}));
   self.skipWaiting();
 });
 
@@ -55,7 +55,7 @@ self.addEventListener("push", (e) => {
     body: d.body || d.corpo || "",
     tag: d.tag,
     renotify: !!d.tag,
-    icon: "./icons/icon-192.png",
+    icon: "./icon-192.png",
     data: { url: d.url || "./" },
   }));
 });
