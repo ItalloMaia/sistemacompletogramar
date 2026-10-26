@@ -220,6 +220,23 @@ textarea{width:100%;resize:vertical;min-height:70px;padding:9px 11px;border:1px 
 .row-actions{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap;}
 .stat[data-go]{cursor:pointer;}
 .panel-scroll{overflow-x:auto;}
+.ef-servico-barra{background:var(--canvas-raised);border:1px solid var(--line);border-radius:var(--radius-sm,8px);padding:10px 12px;margin-bottom:12px;}
+.ef-servico-tit{display:block;font-weight:600;margin-bottom:6px;font-size:.9rem;}
+.ef-servico-barra .chip.on{background:var(--moss-dark,#213A26);color:#fff;border-color:var(--moss-dark,#213A26);}
+.ef-servico-barra .chip.on .muted{color:#d9e4d4;}
+.ef-servicos{grid-column:1 / -1;display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.ef-servicos .chip{font-size:.78rem;padding:3px 10px;}
+.ef-servicos .chip.on{background:var(--moss-tint,#E3EEDF);color:var(--moss-dark,#213A26);border-color:var(--moss-dark,#213A26);font-weight:600;}
+.ef-item.sit-falta .ef-servicos,.ef-item.sit-atestado .ef-servicos,.ef-item.sit-ferias .ef-servicos,.ef-item.sit-folga .ef-servicos,.ef-item.sit-feriado .ef-servicos{display:none;}
+.ef-item.sem-servico .ef-servicos .chip{border-color:var(--clay,#C98A1E);}
+.av-lista{max-height:52vh;overflow:auto;border:1px solid var(--line);border-radius:8px;}
+.av-item{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-bottom:1px solid var(--line);cursor:pointer;}
+.av-item:last-child{border-bottom:none;}
+.av-item input{width:20px;height:20px;margin-top:1px;flex:0 0 20px;accent-color:var(--moss-dark,#213A26);}
+.av-item.on{background:var(--moss-tint,#E3EEDF);}
+.av-item.av-off{opacity:.55;cursor:default;}
+.av-aviso{display:block;font-size:.78rem;color:var(--clay,#C98A1E);}
+.tabela-diarias td,.tabela-diarias th{padding:6px 8px;}
 @media (max-width:640px){
   table.tabela-cards thead{display:none;}
   table.tabela-cards, table.tabela-cards tbody, table.tabela-cards tr, table.tabela-cards td{display:block;width:100%;}
@@ -1292,6 +1309,18 @@ const SITUACOES = {
   feriado:    { label: "Feriado",           grupo: "justificada" },
 };
 const SIT_OUTRAS = ["atestado", "ferias", "folga", "feriado", "declaracao", "externo"];
+/* ---------- os 3 serviços cobrados na medição (diárias) ---------- */
+const SERVICOS = {
+  manutencao:  { cod: "MANU", label: "Manutenção",  longo: "Manutenção de jardim (roçagem, limpeza e poda)" },
+  restauracao: { cod: "REST", label: "Restauração", longo: "Restauração de paisagismo" },
+  execucao:    { cod: "DIEP", label: "Execução",    longo: "Execução de paisagismo" },
+};
+const servicoLabel = k => SERVICOS[k]?.label || "";
+const servicoPadraoDaObra = obra => lerLocal("servico_obra", {})[obra] || "";
+function lembrarServicoDaObra(obra, servico) {
+  if (!obra || !servico) return;
+  const m = lerLocal("servico_obra", {}); m[obra] = servico; gravarLocal("servico_obra", m);
+}
 const situacaoDe = p => p?.situacao || (p ? (p.presente ? "presente" : "falta") : null);
 const trabalhou = s => SITUACOES[s]?.grupo === "presente";
 const podeVerMapa = () => ["admin", "gestor", "encarregado", "rh"].includes(currentUser?.papel);
@@ -1301,13 +1330,17 @@ function textoEfetivo(obraNome, data, lista) {
   const pres = lista.filter(l => trabalhou(l.situacao));
   const faltas = lista.filter(l => l.situacao === "falta");
   const just = lista.filter(l => SITUACOES[l.situacao]?.grupo === "justificada");
+  const servs = [...new Set(pres.map(p => p.servico || ""))];
+  const umServico = servs.length === 1 && servs[0];
   const linhas = [
     `*EFETIVO DIÁRIO — GRAMAR*`,
     `*Obra:* ${obraNome}`,
     `*Data:* ${dataPorExtenso(data)}`,
+    ...(umServico ? [`*Serviço:* ${SERVICOS[umServico].longo}`] : []),
     ``,
     `✅ *Presentes (${pres.length})*`,
     ...pres.map((p, i) => `${i + 1}. ${p.nome}${p.funcao ? " — " + p.funcao : ""}` +
+      (!umServico && p.servico ? ` [${servicoLabel(p.servico)}]` : "") +
       (p.situacao !== "presente" ? ` _(${SITUACOES[p.situacao].label}${p.horaE || p.horaS ? " " + [p.horaE, p.horaS].filter(Boolean).join("–") : ""})_` : "") +
       (p.saida && p.saida !== efetivo?.obra ? ` → à tarde: ${nomeObraCurto(p.saida)}` : "")),
   ];
@@ -1363,6 +1396,7 @@ async function renderPresenca() {
   const porTrab = Object.fromEntries(doDia.map(p => [p.trabalhador_id, p]));
   const obraDe = p => p.contrato_id || (trabalhou(situacaoDe(p)) ? p.trabalhadores?.contrato_id : null) || null;
 
+  const servicoPadrao = servicoPadraoDaObra(efetivo.obra);
   const ids = new Set(cache.trabalhadores.filter(t => t.ativo && t.contrato_id === efetivo.obra).map(t => t.id));
   doDia.filter(p => obraDe(p) === efetivo.obra || p.contrato_saida_id === efetivo.obra).forEach(p => ids.add(p.trabalhador_id));
   (efetivo.extras || []).forEach(id => ids.add(id));
@@ -1377,6 +1411,7 @@ async function renderPresenca() {
     return {
       id, nome: t.nome, funcao: t.funcao, situacao: sit || "presente", obs: p?.observacao || "",
       saida: p?.contrato_saida_id || "", horaE: p?.hora_entrada || "", horaS: p?.hora_saida || "",
+      servico: p?.servico || servicoPadrao,
       bloqueado, salvo: !!p,
     };
   }).sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
@@ -1394,16 +1429,18 @@ async function renderPresenca() {
     </div>
     ${jaSalvo ? `<div class="notice ok">Efetivo deste dia já foi salvo. Pode ajustar e salvar de novo.</div>` : (lista.length ? `<div class="notice">Ainda não salvo — confira e toque em salvar.</div>` : "")}
     ${editavel ? `<div class="row-actions" style="justify-content:flex-start;margin-bottom:10px;">
-      ${lista.length ? `<button class="btn btn-ghost btn-small" id="ef-todos">Todos presentes</button>` : ""}
+      ${foraDaLista.length ? `<button class="btn ${lista.length ? "btn-ghost" : "btn-primary"} btn-small" id="ef-add-varios" style="width:auto;margin:0;">+ Adicionar funcionários</button>` : ""}
       <button class="btn btn-ghost btn-small" id="ef-ontem">Mesma equipe de ontem</button>
+      ${lista.length ? `<button class="btn btn-ghost btn-small" id="ef-todos">Todos presentes</button>` : ""}
+    </div>` : ""}
+    ${lista.length ? `<div class="ef-servico-barra">
+      <span class="ef-servico-tit">Serviço de hoje <span class="muted">(vale para todos — dá pra mudar em cada um)</span></span>
+      <div class="chips">${Object.entries(SERVICOS).map(([k, v]) => `<button type="button" class="chip ef-serv-todos" data-sv="${k}" ${editavel ? "" : "disabled"}><b>${v.label}</b><span class="muted"> · ${v.cod}</span></button>`).join("")}</div>
     </div>` : ""}
     ${lista.length ? `<div class="ef-lista">${lista.map((l, i) => efItemHtml(l, i, editavel)).join("")}</div>`
       : `<div class="empty-state"><div class="big">Ninguém nesta obra ainda</div>Toque em “Mesma equipe de ontem” ou inclua os funcionários abaixo.</div>`}
-    ${editavel && foraDaLista.length ? `
-      <div class="field" style="margin-top:14px;max-width:420px;">
-        <label>Incluir funcionário nesta obra hoje</label>
-        <select id="ef-extra"><option value="">Escolher…</option>${foraDaLista.map(t => `<option value="${t.id}">${escapeHtml(t.nome)}${t.funcao ? " — " + escapeHtml(t.funcao) : ""}</option>`).join("")}</select>
-      </div>` : ""}
+    ${editavel && foraDaLista.length && lista.length ? `
+      <div style="margin-top:12px;"><button class="btn btn-ghost btn-small" id="ef-add-varios2" style="width:auto;margin:0;">+ Adicionar mais funcionários</button></div>` : ""}
     ${lista.length ? `
       <div class="ef-acoes">
         ${editavel ? `<button class="btn btn-primary" id="ef-salvar-wa">Salvar e enviar no WhatsApp</button>
@@ -1420,7 +1457,20 @@ async function renderPresenca() {
   contar();
   document.getElementById("ef-obra").onchange = e => { efetivo.obra = e.target.value; efetivo.extras = []; gravarLocal("prefs_efetivo", { obra: efetivo.obra }); renderPresenca(); };
   document.getElementById("ef-data").onchange = e => { if (e.target.value) { efetivo.data = e.target.value; efetivo.extras = []; renderPresenca(); } };
-  document.getElementById("ef-extra")?.addEventListener("change", e => { if (e.target.value) { efetivo.extras = [...(efetivo.extras || []), e.target.value]; renderPresenca(); } });
+  const abrirAdicionar = () => abrirAdicionarVarios(foraDaLista, porTrab, obraDe);
+  document.getElementById("ef-add-varios")?.addEventListener("click", abrirAdicionar);
+  document.getElementById("ef-add-varios2")?.addEventListener("click", abrirAdicionar);
+  const marcarBarraServico = () => {
+    const v = lista.filter(l => !l.bloqueado && trabalhou(l.situacao));
+    const todos = v.length && v.every(l => l.servico === v[0].servico) ? v[0].servico : null;
+    content.querySelectorAll(".ef-serv-todos").forEach(c => c.classList.toggle("on", c.dataset.sv === todos));
+  };
+  content.querySelectorAll(".ef-serv-todos").forEach(c => c.onclick = () => {
+    lista.forEach(l => { if (!l.bloqueado) l.servico = c.dataset.sv; });
+    content.querySelectorAll(".ef-item:not(.bloq)").forEach(el => atualizarEfItem(el, lista[+el.dataset.i]));
+    marcarBarraServico();
+  });
+  marcarBarraServico();
   document.getElementById("ef-ontem")?.addEventListener("click", async () => {
     const d = new Date(efetivo.data + "T12:00:00"); d.setDate(d.getDate() - 1);
     let { data: ontem } = await supabase.from("presencas").select("trabalhador_id, situacao, presente, contrato_id, contrato_saida_id").eq("data", hojeISO(d));
@@ -1443,6 +1493,7 @@ async function renderPresenca() {
       if (l.situacao === "falta") el.querySelector(".ef-obs").focus();
     });
     el.querySelectorAll(".ef-sit").forEach(c => c.onclick = () => { l.situacao = c.dataset.s; el.classList.remove("abre-outro"); atualizarEfItem(el, l); contar(); });
+    el.querySelectorAll(".ef-serv").forEach(c => c.onclick = () => { l.servico = c.dataset.sv; atualizarEfItem(el, l); marcarBarraServico(); });
     el.querySelector(".ef-obs").oninput = e => { l.obs = e.target.value; };
     el.querySelector(".ef-tarde-link")?.addEventListener("click", ev => { ev.preventDefault(); el.classList.add("com-tarde"); });
     el.querySelector(".ef-tarde")?.addEventListener("change", e => { if (e.target.value !== "__nova__") l.saida = e.target.value; });
@@ -1452,29 +1503,41 @@ async function renderPresenca() {
 
   const obraNome = () => nomeObraCurto(efetivo.obra);
   const montarTexto = () => textoEfetivo(obraNome(), efetivo.data, lista.filter(l => !l.bloqueado));
+  const servicoOk = () => {
+    const semServico = lista.filter(l => !l.bloqueado && trabalhou(l.situacao) && !l.servico);
+    if (!semServico.length) return true;
+    toast(`Marque o serviço de hoje (Manutenção, Restauração ou Execução) — falta em ${semServico.length} pessoa(s)`);
+    content.querySelector(".ef-servico-barra")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    return false;
+  };
   const salvar = async () => {
+    if (!servicoOk()) return false;
     const payload = lista.filter(l => !l.bloqueado).map(l => ({
       trabalhador_id: l.id, data: efetivo.data, situacao: l.situacao, presente: trabalhou(l.situacao),
       observacao: l.situacao === "presente" ? null : (l.obs.trim() || null),
       contrato_id: efetivo.obra,
       contrato_saida_id: trabalhou(l.situacao) && l.saida && l.saida !== efetivo.obra ? l.saida : null,
       hora_entrada: l.horaE || null, hora_saida: l.horaS || null,
+      servico: trabalhou(l.situacao) ? l.servico : null,
       registrado_por: currentUser.id,
     }));
     const { error } = await supabase.from("presencas").upsert(payload, { onConflict: "trabalhador_id,data" });
     if (error) {
-      toast(error.code === "PGRST204" || /situacao|contrato_saida|hora_/.test(error.message)
+      toast(error.code === "PGRST204" || /situacao|contrato_saida|hora_|servico/.test(error.message)
         ? "Falta atualizar o banco: rode o SQL final no Supabase" : "Erro ao salvar: " + error.message);
       return false;
     }
     await logAudit("medicoes", "salvar_efetivo", "presenca", null, {
       obra: efetivo.obra, data: efetivo.data, presentes: payload.filter(p => p.presente).length, total: payload.length,
     });
+    const usados = payload.map(x => x.servico).filter(Boolean);
+    if (usados.length) lembrarServicoDaObra(efetivo.obra, usados.sort((a, b) => usados.filter(x => x === b).length - usados.filter(x => x === a).length)[0]);
     efetivo.extras = [];
     return true;
   };
   document.getElementById("ef-salvar")?.addEventListener("click", async () => { if (await salvar()) { toast("Efetivo salvo"); renderPresenca(); } });
   document.getElementById("ef-salvar-wa")?.addEventListener("click", async () => {
+    if (!servicoOk()) return;
     abrirWhatsApp(montarTexto());
     if (await salvar()) { toast("Efetivo salvo"); renderPresenca(); }
   });
@@ -1495,6 +1558,7 @@ function efItemHtml(l, i, editavel) {
           <button type="button" class="ef-btn" data-v="outro" ${dis}>Outro ▾</button>
         </div>
         <div class="ef-outros">${SIT_OUTRAS.map(s => `<button type="button" class="chip ef-sit" data-s="${s}" ${dis}>${SITUACOES[s].label}</button>`).join("")}</div>
+        <div class="ef-servicos"><span class="muted" style="font-size:.8rem;">Serviço:</span>${Object.entries(SERVICOS).map(([k, v]) => `<button type="button" class="chip ef-serv" data-sv="${k}" ${dis}>${v.label}</button>`).join("")}</div>
         <div class="ef-extra-campos">
           <input class="ef-obs" placeholder="Motivo / observação" value="${escapeHtml(l.obs)}" ${dis} />
           <div class="ef-horas"><input class="ef-he" placeholder="entrada ex.: 07:50" value="${escapeHtml(l.horaE)}" ${dis} /><input class="ef-hs" placeholder="saída ex.: 17:00" value="${escapeHtml(l.horaS)}" ${dis} /></div>
@@ -1511,6 +1575,57 @@ function atualizarEfItem(el, l) {
   const atual = el.querySelector(".ef-sit-atual");
   if (atual) atual.textContent = SIT_OUTRAS.includes(l.situacao) ? SITUACOES[l.situacao].label : "";
   const obs = el.querySelector(".ef-obs"); if (obs) obs.value = l.obs;
+  el.querySelectorAll(".ef-serv").forEach(c => c.classList.toggle("on", c.dataset.sv === l.servico));
+  el.classList.toggle("sem-servico", trabalhou(l.situacao) && !l.servico);
+}
+
+/* ---------- adicionar vários funcionários de uma vez ---------- */
+function abrirAdicionarVarios(fora, porTrab, obraDe) {
+  const itens = fora.map(t => {
+    const p = porTrab[t.id];
+    const outra = p && obraDe(p) && obraDe(p) !== efetivo.obra ? `já lançado hoje em ${nomeObraCurto(obraDe(p))}` : "";
+    const just = p && !outra && ["ferias", "atestado", "folga"].includes(situacaoDe(p)) ? SITUACOES[situacaoDe(p)].label : "";
+    return { t, aviso: outra || just };
+  }).sort((a, b) => (!!a.aviso - !!b.aviso) || a.t.nome.localeCompare(b.t.nome, "pt-BR"));
+  openModal(`
+    <h3>Adicionar funcionários nesta obra</h3>
+    <p class="muted" style="margin-top:0;">${escapeHtml(nomeObraCurto(efetivo.obra))} · ${fmtDate(efetivo.data)} — marque todos que estão aqui e toque em Adicionar.</p>
+    <input id="av-busca" class="input-filter" style="width:100%;margin-bottom:8px;" placeholder="Buscar pelo nome…" autocomplete="off" />
+    <div class="row-actions" style="justify-content:space-between;margin:0 0 6px;">
+      <button type="button" class="btn btn-ghost btn-small" id="av-todos" style="width:auto;margin:0;">Marcar todos</button>
+      <span class="muted" id="av-cont">0 marcado(s)</span>
+    </div>
+    <div class="av-lista">${itens.map(({ t, aviso }) => `
+      <label class="av-item ${aviso ? "av-off" : ""}" data-nome="${escapeHtml(semAcentoTxt(t.nome))}">
+        <input type="checkbox" value="${t.id}" ${aviso ? "disabled" : ""} />
+        <span><b>${escapeHtml(t.nome)}</b>${t.funcao ? `<span class="muted"> · ${escapeHtml(t.funcao)}</span>` : ""}${aviso ? `<span class="av-aviso">${escapeHtml(aviso)}</span>` : ""}</span>
+      </label>`).join("")}</div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" id="av-ok" disabled>Adicionar</button>
+    </div>`);
+  const caixas = () => [...document.querySelectorAll(".av-item input:not(:disabled)")];
+  const atualizar = () => {
+    const n = caixas().filter(c => c.checked).length;
+    document.getElementById("av-cont").textContent = `${n} marcado(s)`;
+    const ok = document.getElementById("av-ok"); ok.disabled = !n; ok.textContent = n ? `Adicionar ${n}` : "Adicionar";
+    document.querySelectorAll(".av-item").forEach(l => l.classList.toggle("on", l.querySelector("input").checked));
+  };
+  document.querySelectorAll(".av-item input").forEach(c => c.onchange = atualizar);
+  document.getElementById("av-busca").oninput = e => {
+    const q = semAcentoTxt(e.target.value);
+    document.querySelectorAll(".av-item").forEach(l => l.style.display = !q || l.dataset.nome.includes(q) ? "" : "none");
+  };
+  document.getElementById("av-todos").onclick = () => {
+    const visiveis = caixas().filter(c => c.closest(".av-item").style.display !== "none");
+    const marcar = visiveis.some(c => !c.checked);
+    visiveis.forEach(c => c.checked = marcar); atualizar();
+  };
+  document.getElementById("av-ok").onclick = () => {
+    const sel = caixas().filter(c => c.checked).map(c => c.value);
+    efetivo.extras = [...new Set([...(efetivo.extras || []), ...sel])];
+    closeModal(); toast(`${sel.length} funcionário(s) adicionado(s) — confira e salve`); renderPresenca();
+  };
 }
 async function resumoEfetivoDia(data) {
   const { data: rows, error } = await supabase.from("presencas")
@@ -1563,7 +1678,7 @@ async function renderPresencaHistorico() {
   content.innerHTML = `
     <div class="panel panel-scroll">
       <table>
-        <thead><tr><th>Data</th><th>Funcionário</th><th>Obra</th><th>Situação</th><th>Observação</th><th></th></tr></thead>
+        <thead><tr><th>Data</th><th>Funcionário</th><th>Obra</th><th>Situação</th><th>Serviço</th><th>Observação</th><th></th></tr></thead>
         <tbody>
           ${(rows||[]).map(r => { const sit = situacaoDe(r); return `
             <tr>
@@ -1571,9 +1686,10 @@ async function renderPresencaHistorico() {
               <td>${escapeHtml(r.trabalhadores?.nome || "—")}</td>
               <td>${r.contrato_id ? escapeHtml(nomeObraCurto(r.contrato_id)) : "—"}${r.contrato_saida_id ? ` → ${escapeHtml(nomeObraCurto(r.contrato_saida_id))}` : ""}</td>
               <td><span class="status-badge sitb-${sit}">${SITUACOES[sit]?.label || sit}</span></td>
+              <td>${SERVICOS[r.servico] ? `${SERVICOS[r.servico].cod} · ${servicoLabel(r.servico)}` : "—"}</td>
               <td>${escapeHtml(r.observacao || "—")}</td>
               <td>${editavel ? `<button class="btn btn-ghost edit-presenca" data-id="${r.id}">Editar</button>` : ""}</td>
-            </tr>`; }).join("") || `<tr><td colspan="6"><div class="empty-state">Nenhum registro ainda</div></td></tr>`}
+            </tr>`; }).join("") || `<tr><td colspan="7"><div class="empty-state">Nenhum registro ainda</div></td></tr>`}
         </tbody>
       </table>
     </div>
@@ -1600,6 +1716,7 @@ function openPresencaModal(row, padrao = {}) {
       <div class="field"><label>Entrada</label><input id="pr-he" value="${escapeHtml(base.hora_entrada || "")}" placeholder="07:00" /></div>
       <div class="field"><label>Saída</label><input id="pr-hs" value="${escapeHtml(base.hora_saida || "")}" placeholder="17:00" /></div>
     </div>
+    <div class="field"><label>Serviço (para a medição)</label><select id="pr-serv"><option value="">—</option>${Object.entries(SERVICOS).map(([k, v]) => `<option value="${k}" ${base.servico === k ? "selected" : ""}>${v.cod} · ${v.longo}</option>`).join("")}</select></div>
     <div class="field"><label>Observação</label><textarea id="pr-obs">${escapeHtml(base.observacao || "")}</textarea></div>
     <div class="modal-actions">
       ${isEdit ? `<button class="btn btn-danger-outline" id="pr-del">Excluir</button>` : ""}
@@ -1619,6 +1736,7 @@ function openPresencaModal(row, padrao = {}) {
       hora_entrada: document.getElementById("pr-he").value.trim() || null,
       hora_saida: document.getElementById("pr-hs").value.trim() || null,
       observacao: document.getElementById("pr-obs").value.trim() || null,
+      servico: trabalhou(s) ? (document.getElementById("pr-serv").value || null) : null,
       registrado_por: currentUser.id,
     };
     const { error } = isEdit
@@ -3450,9 +3568,17 @@ async function carregarRegistro(f) {
     (trabalhou(situacaoDe(p)) ? d.presentes : d.faltas).push(item);
   });
   const homensDia = presencas.filter(p => trabalhou(situacaoDe(p))).length;
+  // diárias para a medição: dia inteiro = 1; se trocou de obra à tarde = 0,5 em cada obra
+  const diarias = { manutencao: 0, restauracao: 0, execucao: 0, sem: 0 };
+  presencas.filter(p => trabalhou(situacaoDe(p))).forEach(p => {
+    const manha = obraDaPresenca(p), tarde = p.contrato_saida_id && p.contrato_saida_id !== manha ? p.contrato_saida_id : null;
+    let peso = 1;
+    if (f.obra) peso = (manha === f.obra ? (tarde ? 0.5 : 1) : 0) + (tarde === f.obra ? 0.5 : 0);
+    diarias[SERVICOS[p.servico] ? p.servico : "sem"] += peso;
+  });
   const diasTrab = Object.values(dias).filter(d => d.presentes.length).length;
   return {
-    dias, homensDia, diasTrab,
+    dias, homensDia, diasTrab, diarias,
     faltas: presencas.filter(p => situacaoDe(p) === "falta").length,
     atividades: ativ.data || [], insumos: ins.data || [], pendencias, fotos: fotos.data || [],
     totalInsumos: (ins.data || []).reduce((s, r) => s + Number(r.valor_total || 0), 0),
@@ -3509,6 +3635,11 @@ async function renderRegistro() {
       <div class="stat"><div class="num">${R.fotos.length}</div><div class="label">Fotos</div></div>
       <div class="stat"><div class="num">${fmtMoney(R.totalInsumos)}</div><div class="label">Insumos</div></div>
       <div class="stat"><div class="num" style="${abertas.length ? "color:var(--clay)" : ""}">${abertas.length}</div><div class="label">Plano: itens abertos</div></div>
+    </div>
+
+    <div class="panel">
+      <h3 style="margin-bottom:12px;">Diárias para a medição</h3>
+      ${tabelaDiarias(R.diarias)}
     </div>
 
     <div class="panel panel-scroll">
@@ -3576,6 +3707,15 @@ async function renderRegistro() {
   document.getElementById("rg-pdf").onclick = () => pdfRegistro(obraNome, f, R);
 }
 
+const fmtDiaria = n => String(Math.round(n * 10) / 10).replace(".", ",");
+function tabelaDiarias(D) {
+  const total = Object.values(D).reduce((a, b) => a + b, 0);
+  if (!total) return `<div class="muted">Nenhuma diária no período.</div>`;
+  return `<table class="tabela-diarias"><thead><tr><th>Código</th><th>Serviço</th><th style="text-align:right">Diárias</th></tr></thead><tbody>
+    ${Object.entries(SERVICOS).map(([k, v]) => `<tr><td><b>${v.cod}</b></td><td>${v.longo}</td><td style="text-align:right"><b>${fmtDiaria(D[k])}</b></td></tr>`).join("")}
+    ${D.sem ? `<tr><td>—</td><td class="muted">Sem serviço marcado (lançamentos antigos)</td><td style="text-align:right">${fmtDiaria(D.sem)}</td></tr>` : ""}
+    <tr><td></td><td><b>Total</b></td><td style="text-align:right"><b>${fmtDiaria(total)}</b></td></tr></tbody></table>`;
+}
 function textoRegistro(obraNome, f, R) {
   const periodo = f.de === f.ate ? fmtDate(f.de) : `${fmtDate(f.de)} a ${fmtDate(f.ate)}`;
   const abertas = R.pendencias.filter(p => !p.resolvida);
@@ -3586,6 +3726,9 @@ function textoRegistro(obraNome, f, R) {
     ``,
     `👷 *Efetivo:* ${R.homensDia} homens-dia em ${R.diasTrab} dia(s)` + (R.diasTrab ? ` (média ${(R.homensDia / R.diasTrab).toFixed(1).replace(".", ",")}/dia)` : ""),
     `❌ *Faltas:* ${R.faltas}`,
+    `🧾 *Diárias para a medição:*`,
+    ...Object.entries(SERVICOS).map(([k, v]) => `   • ${v.cod} — ${v.longo}: *${fmtDiaria(R.diarias[k])}*`),
+    ...(R.diarias.sem ? [`   • Sem serviço marcado: ${fmtDiaria(R.diarias.sem)}`] : []),
     `🛠️ *Atividades:* ${R.atividades.length}`,
     ...R.atividades.slice(-8).map(a => `   • ${fmtDate(a.data).slice(0, 5)} — ${a.descricao}`),
     `📦 *Insumos:* ${R.insumos.length} item(ns) · ${fmtMoney(R.totalInsumos)}`,
@@ -3634,6 +3777,8 @@ async function pdfRegistro(obraNome, f, R) {
   <div class="kpi"><b>${R.faltas}</b>faltas</div>
   <div class="kpi"><b>${R.fotos.length}</b>fotos</div>
 </div>
+<h2>Diárias para a medição</h2>
+${tabelaDiarias(R.diarias)}
 <h2>Efetivo por dia</h2>
 ${dias.length ? `<table><thead><tr><th>Dia</th><th>Qtd</th><th>Presentes</th><th>Faltas</th></tr></thead><tbody>
 ${dias.map(d => `<tr><td style="white-space:nowrap">${new Date(d + "T00:00:00").toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "2-digit" })}</td>
