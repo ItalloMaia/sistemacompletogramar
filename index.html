@@ -829,7 +829,7 @@ document.getElementById("logout-btn").addEventListener("click", () => {
     <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">Continuar entrado</button><button class="btn btn-primary" id="sair-ok">Sair</button></div>`);
   document.getElementById("sair-ok").onclick = async () => {
     try { localStorage.removeItem("hub:perfil"); } catch {}
-    await supabase.auth.signOut();
+    await supabase.auth.signOut({ scope: "local" }); // sai só deste aparelho; os outros continuam entrados
     location.reload();
   };
 });
@@ -860,7 +860,7 @@ async function afterLogin(authUser) {
   if (!perfil) {
     if (navigator.onLine) {
       // conta que não está na equipe do app: não entra (o banco também bloqueia)
-      await supabase.auth.signOut();
+      await supabase.auth.signOut({ scope: "local" }); // sai só deste aparelho; os outros continuam entrados
       document.getElementById("login-error").textContent = "Seu usuário ainda não foi liberado na equipe do Gramar Hub. Fale com o Itallo.";
     } else {
       document.getElementById("login-error").textContent = "Sem internet para carregar seu perfil. Tente de novo quando tiver sinal.";
@@ -5185,6 +5185,17 @@ function renderStatusTable(rows, moduleName, columns, editFn, editavel) {
     });
   }
 }
+
+// se a sessão deste aparelho cair (senha trocada, login removido), volta pra tela de entrada com aviso
+supabase.auth.onAuthStateChange((evento) => {
+  if (evento === "SIGNED_OUT" && currentUser) {
+    currentUser = null;
+    document.getElementById("app").style.display = "none";
+    document.getElementById("login-screen").style.display = "";
+    document.body.classList.remove("logado");
+    document.getElementById("login-error").textContent = "Sua sessão terminou neste aparelho. Entre de novo.";
+  }
+});
 
 // tudo definido — agora sim confere se já tem sessão aberta
 checkSession();
