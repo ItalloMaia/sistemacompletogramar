@@ -8,8 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/4.4.4/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js"></script>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -441,6 +441,7 @@ table.mapa .mp-nome{text-align:left;min-width:170px;position:sticky;left:0;backg
 .pl-rapido-linha{display:flex;gap:6px;align-items:center;}
 .pl-rapido-linha input{flex:1;min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:22px;font-size:0.92rem;}
 .pl-rapido-linha .btn-primary{width:auto;margin:0;border-radius:22px;}
+[hidden]{display:none !important;}
 .pl-mic{width:40px;height:40px;flex:0 0 40px;border-radius:50%;border:none;background:var(--moss);color:#fff;display:flex;align-items:center;justify-content:center;}
 .pl-mic svg{width:18px;height:18px;}
 .pl-mic.gravando,#dt-audio.gravando,#cc-audio.gravando{background:var(--danger);color:#fff;animation:pulsar 1s infinite;}
@@ -610,6 +611,7 @@ document.querySelectorAll(".nav-item").forEach(el => {
 /* ============================================================
    ESTADO GLOBAL
    ============================================================ */
+const VOZ_NA_LINHA_RAPIDA = false; // ditado por voz no plano de ação (desligado por enquanto)
 let currentUser = null;   // registro da tabela `usuarios`
 let currentView = "dashboard";
 let cache = { usuarios: [], contratos: [], trabalhadores: [], quadroId: null };
@@ -1127,6 +1129,17 @@ async function renderDashboard() {
   `;
   content.querySelectorAll(".stat[data-go]").forEach(el => el.onclick = () => setView(el.dataset.go));
 
+  // gráficos: se a biblioteca não carregou (internet fraca), o painel continua funcionando sem eles
+  if (typeof Chart === "undefined" || currentView !== "dashboard") {
+    content.querySelector(".two-col")?.remove();
+    return;
+  }
+  const novoGrafico = (id, cfg) => {
+    const canvas = document.getElementById(id);
+    if (!canvas) return;
+    try { Chart.getChart?.(canvas)?.destroy(); new Chart(canvas, cfg); }
+    catch (e) { console.warn("gráfico não montado", e); canvas.closest(".chart-wrap")?.remove(); }
+  };
   // gráfico de presença nos últimos 14 dias
   const byDay = {};
   (presencas || []).forEach(p => {
@@ -1135,7 +1148,7 @@ async function renderDashboard() {
     if (p.presente) byDay[p.data].presentes++;
   });
   const days = Object.keys(byDay).sort().slice(-14);
-  new Chart(document.getElementById("chart-presenca"), {
+  novoGrafico("chart-presenca", {
     type: "line",
     data: {
       labels: days.map(fmtDate),
@@ -1149,7 +1162,7 @@ async function renderDashboard() {
   });
 
   const porStatus = STATUS_TAREFA.map(s => (tarefas || []).filter(t => t.status === s.key).length);
-  new Chart(document.getElementById("chart-tarefas"), {
+  novoGrafico("chart-tarefas", {
     type: "doughnut",
     data: {
       labels: STATUS_TAREFA.map(s => s.label),
@@ -4308,14 +4321,21 @@ function ligarLinhaRapida() {
   inp.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); criar(); } };
   const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
   const mic = document.getElementById("pl-rapido-mic");
-  if (!Rec) { mic.hidden = true; return; }
+  // ditado por voz DESLIGADO por enquanto (travava em alguns aparelhos). Para ligar: VOZ_NA_LINHA_RAPIDA = true
+  if (!VOZ_NA_LINHA_RAPIDA || !Rec) { mic.hidden = true; return; }
+  let rec = null;
+  const parar = () => { mic.classList.remove("gravando"); rec = null; };
   mic.onclick = () => {
-    const rec = new Rec(); rec.lang = "pt-BR"; rec.interimResults = true;
-    mic.classList.add("gravando");
-    rec.onresult = ev => { inp.value = [...ev.results].map(x => x[0].transcript).join(" "); mostrar(); };
-    rec.onend = () => mic.classList.remove("gravando");
-    rec.onerror = () => { mic.classList.remove("gravando"); toast("Não consegui ouvir — tente o microfone do teclado"); };
-    rec.start();
+    if (rec) { try { rec.stop(); } catch {} parar(); return; } // segundo toque para de ouvir
+    try {
+      rec = new Rec(); rec.lang = "pt-BR"; rec.interimResults = true;
+      rec.onresult = ev => { inp.value = [...ev.results].map(x => x[0].transcript).join(" "); mostrar(); };
+      rec.onend = parar;
+      rec.onerror = () => { parar(); toast("Não consegui ouvir — use o microfone do teclado do celular"); };
+      mic.classList.add("gravando");
+      rec.start();
+      setTimeout(() => { if (rec) { try { rec.stop(); } catch {} } }, 15000); // nunca fica preso ouvindo
+    } catch { parar(); toast("Ditado por voz indisponível neste aparelho — use o microfone do teclado"); }
   };
 }
 function avisarNovoItem(it) {
@@ -4349,9 +4369,10 @@ function ligarGravador(botao, aoTerminar) {
         rec = null; botao.classList.remove("gravando"); botao.textContent = rotulo;
         aoTerminar(arq);
       };
-      rec.start(); inicio = Date.now(); botao.classList.add("gravando");
+      try { rec.start(); } catch { stream.getTracks().forEach(t => t.stop()); rec = null; return toast("Não consegui gravar neste aparelho"); }
+      inicio = Date.now(); botao.classList.add("gravando");
       timer = setInterval(() => { const s = Math.round((Date.now() - inicio) / 1000); botao.textContent = `⏹ Parar ${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; }, 500);
-    } catch { toast("Libere o microfone para gravar áudio"); }
+    } catch { rec = null; botao.classList.remove("gravando"); botao.textContent = rotulo; toast("Libere o microfone para gravar áudio"); }
   };
 }
 
