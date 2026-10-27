@@ -4911,7 +4911,8 @@ function lerPlanoTexto(texto) {
       m = t.match(/^(.+?)\s*(?:[\-–—]\s*|\(\s*|\bresp(?:ons[aá]vel)?\.?\s*:?\s*)([A-Za-zÀ-ÿ]+(?:\s[A-Za-zÀ-ÿ]+)?)\s*\)?[.!]?$/i);
       if (m && acharPessoa(m[2])) { it.responsavel_id = acharPessoa(m[2]).id; t = m[1]; }
     }
-    it.titulo = t.replace(/\s+/g, " ").replace(/[\s,;:\-–—]+$/, "").trim();
+    t = t.replace(/\s+/g, " ").replace(/[\s,;:\-–—]+$/, "").trim();
+    it.titulo = t ? t[0].toUpperCase() + t.slice(1) : t;
   }));
   return secoes.filter(s => s.itens.length);
 }
