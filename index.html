@@ -442,6 +442,7 @@ table.mapa .mp-nome{text-align:left;min-width:170px;position:sticky;left:0;backg
 .pl-rapido-linha input{flex:1;min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:22px;font-size:0.92rem;}
 .pl-rapido-linha .btn-primary{width:auto;margin:0;border-radius:22px;}
 [hidden]{display:none !important;}
+.ip-pdf{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px;}
 .pl-mic{width:40px;height:40px;flex:0 0 40px;border-radius:50%;border:none;background:var(--moss);color:#fff;display:flex;align-items:center;justify-content:center;}
 .pl-mic svg{width:18px;height:18px;}
 .pl-mic.gravando,#dt-audio.gravando,#cc-audio.gravando{background:var(--danger);color:#fff;animation:pulsar 1s infinite;}
@@ -4890,23 +4891,65 @@ function lerPlanoTexto(texto) {
     const ehTitulo = letras.length >= 3 && letras === letras.toUpperCase() && /[A-ZÀ-Þ]/.test(letras);
     if (ehTitulo) {
       const resp = pessoas.find(p => semAcento(l).split(/[^a-z]+/).includes(semAcento(p.nome.split(" ")[0])));
-      atual = { nome: l, responsavel_id: resp?.id || null, itens: [] };
+      atual = { nome: l, responsavel_id: resp?.id || null, contrato_id: lerLinhaRapida(l).contrato_id || null, itens: [] };
       secoes.push(atual);
       continue;
     }
-    if (!atual) { atual = { nome: "GERAL", responsavel_id: null, itens: [] }; secoes.push(atual); }
+    if (!atual) { atual = { nome: "GERAL", responsavel_id: null, contrato_id: null, itens: [] }; secoes.push(atual); }
     const anterior = atual.itens[atual.itens.length - 1];
-    if (anterior && /^[a-zà-ÿ(]/.test(l) && !/[.!?:]$/.test(anterior)) atual.itens[atual.itens.length - 1] = anterior + " " + l;
-    else atual.itens.push(l);
+    if (anterior && /^[a-zà-ÿ(]/.test(l) && !/[.!?:]$/.test(anterior.titulo)) anterior.titulo += " " + l;
+    else atual.itens.push({ titulo: l });
   }
+  // em cada item: nome da pessoa no começo ("Ronaldo: …") ou no fim ("… — Ronaldo", "(Ronaldo)", "Resp.: Ronaldo") e "urgente"
+  const acharPessoa = trecho => pessoas.find(p => semAcento(trecho).trim() === semAcento(p.nome.split(" ")[0]) || semAcento(trecho).trim() === semAcento(p.nome));
+  secoes.forEach(sec => sec.itens.forEach(it => {
+    let t = it.titulo;
+    if (/\burgente\b/i.test(semAcento(t))) { it.urgente = true; t = t.replace(/[\s,;(\[\-–—]*\burgente\b[)\]!.]*/i, " ").trim(); }
+    let m = t.match(/^([A-Za-zÀ-ÿ]+(?:\s[A-Za-zÀ-ÿ]+)?)\s*[:\-–—]\s+(.+)$/);
+    if (m && acharPessoa(m[1])) { it.responsavel_id = acharPessoa(m[1]).id; t = m[2]; }
+    else {
+      m = t.match(/^(.+?)\s*(?:[\-–—]\s*|\(\s*|\bresp(?:ons[aá]vel)?\.?\s*:?\s*)([A-Za-zÀ-ÿ]+(?:\s[A-Za-zÀ-ÿ]+)?)\s*\)?[.!]?$/i);
+      if (m && acharPessoa(m[2])) { it.responsavel_id = acharPessoa(m[2]).id; t = m[1]; }
+    }
+    it.titulo = t.replace(/\s+/g, " ").replace(/[\s,;:\-–—]+$/, "").trim();
+  }));
   return secoes.filter(s => s.itens.length);
+}
+
+/* ---------- ler o texto de um PDF direto no celular/computador (pdf.js, só carrega quando usar) ---------- */
+const PDFJS_URL = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.mjs";
+const PDFJS_WORKER = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.mjs";
+async function textoDoPdf(arquivo) {
+  const pdfjs = await import(PDFJS_URL);
+  pdfjs.GlobalWorkerOptions.workerSrc = PDFJS_WORKER;
+  const doc = await pdfjs.getDocument({ data: new Uint8Array(await arquivo.arrayBuffer()) }).promise;
+  const linhas = [];
+  for (let n = 1; n <= doc.numPages; n++) {
+    const pag = await doc.getPage(n);
+    const { items } = await pag.getTextContent();
+    const porLinha = new Map();
+    items.forEach(i => {
+      if (!i.str?.trim()) return;
+      const y = Math.round(i.transform[5] / 3) * 3; // junta pedaços da mesma linha
+      if (!porLinha.has(y)) porLinha.set(y, []);
+      porLinha.get(y).push(i);
+    });
+    [...porLinha.entries()].sort((a, b) => b[0] - a[0]).forEach(([, its]) => {
+      its.sort((a, b) => a.transform[4] - b.transform[4]);
+      linhas.push(its.map(i => i.str).join(" ").replace(/\s+/g, " ").trim());
+    });
+    linhas.push("");
+  }
+  return linhas.join("\n");
 }
 
 function abrirImportarPlano() {
   const pessoas = pessoasPlano();
   openModal(`
     <h3>Colar plano de ação</h3>
-    <p class="muted" style="margin-top:0;">Cole o texto do plano (pode copiar do PDF ou do Word). Linhas em MAIÚSCULAS viram seções; as outras viram itens. Se o nome da seção tiver o nome de alguém (ex.: “ANTÔNIO — TAREFAS”), os itens já vão pra ele.</p>
+    <p class="muted" style="margin-top:0;">Abra o PDF do plano ou cole o texto. Linhas em MAIÚSCULAS viram seções; as outras viram itens. Seção com nome de alguém (“ANTÔNIO — TAREFAS”) manda tudo pra ele; item com nome no começo ou no fim (“Ronaldo: …” ou “… — Ronaldo”) vai pra essa pessoa; seção com nome de obra já liga a obra.</p>
+    <div class="ip-pdf"><label class="btn btn-ghost btn-small" style="width:auto;margin:0;cursor:pointer;">📄 Abrir PDF do plano<input type="file" id="ip-arquivo" accept="application/pdf,.pdf" hidden></label>
+      <span class="muted" id="ip-pdf-status">ou cole o texto abaixo</span></div>
     <div class="field"><label>Texto do plano</label><textarea id="ip-texto" style="min-height:220px;" placeholder="HOTEL VILA GALÉ — PENDÊNCIAS&#10;Concluir a irrigação das alclifas.&#10;Instalar o controlador da frente do hotel.&#10;&#10;ANTÔNIO — TAREFAS&#10;Comprar os bornos."></textarea></div>
     <div class="two-col" style="grid-template-columns:1fr 1fr;gap:12px;">
       <div class="field"><label>Para o dia</label><input type="date" id="ip-data" value="${hojeISO()}" /></div>
@@ -4927,9 +4970,23 @@ function abrirImportarPlano() {
     document.getElementById("ip-ok").textContent = n ? `Importar ${n} item(ns)` : "Importar";
     document.getElementById("ip-previa").innerHTML = secoes.map(s => `
       <div class="pl-secao-cab">${escapeHtml(s.nome)} <span>${s.itens.length}${s.responsavel_id ? ` · ${escapeHtml(primeiroNome(s.responsavel_id))}` : ""}</span></div>
-      <ol>${s.itens.map(i => `<li>${escapeHtml(i)}</li>`).join("")}</ol>`).join("");
+      <ol>${s.itens.map(i => `<li>${i.urgente ? `<span class="pl-tag urg">URGENTE</span> ` : ""}${escapeHtml(i.titulo)}${i.responsavel_id && i.responsavel_id !== s.responsavel_id ? ` <span class="pl-pessoa" style="--c:${corPessoa(i.responsavel_id).cor}">${escapeHtml(primeiroNome(i.responsavel_id))}</span>` : ""}</li>`).join("")}</ol>`).join("");
   };
   tx.oninput = previa;
+  document.getElementById("ip-arquivo").onchange = async e => {
+    const arq = e.target.files?.[0]; if (!arq) return;
+    const st = document.getElementById("ip-pdf-status");
+    st.textContent = "Lendo o PDF…";
+    try {
+      tx.value = await textoDoPdf(arq);
+      previa();
+      const n = secoes.reduce((a, x) => a + x.itens.length, 0);
+      st.textContent = n ? `${arq.name}: ${n} item(ns) encontrados — confira abaixo` : "Não achei texto nesse PDF (pode ser foto/escaneado). Cole o texto.";
+    } catch (err) {
+      console.warn(err);
+      st.textContent = "Não consegui ler esse PDF aqui. Abra o PDF, copie o texto e cole abaixo.";
+    }
+  };
   document.getElementById("ip-cancel").onclick = closeModal;
   document.getElementById("ip-ok").onclick = async () => {
     const btn = document.getElementById("ip-ok"); btn.disabled = true; btn.textContent = "Importando…";
@@ -4939,11 +4996,14 @@ function abrirImportarPlano() {
     const padrao = livreImport ? null : (escolha || null);
     const proxima = {};
     const linhas = [];
-    secoes.forEach(s => s.itens.forEach(titulo => {
-      const resp = s.responsavel_id || padrao;
+    const agora = new Date().toISOString();
+    secoes.forEach(s => s.itens.forEach(it => {
+      const resp = it.responsavel_id || s.responsavel_id || padrao;
       const k = resp || "sem";
       if (proxima[k] == null) proxima[k] = proximaOrdem(resp, false);
-      linhas.push({ titulo, secao: s.nome, responsavel_id: resp, aberta: !resp && livreImport, data_prevista: data, ordem: proxima[k]++, criado_por: currentUser.id });
+      linhas.push({ titulo: it.titulo, secao: s.nome, responsavel_id: resp, aberta: !resp && livreImport, urgente: !!it.urgente,
+        contrato_id: s.contrato_id || null, atribuido_em: resp ? agora : null,
+        data_prevista: data, ordem: proxima[k]++, criado_por: currentUser.id });
     }));
     const { data: criados, error } = await supabase.from("plano_itens").insert(linhas).select("id, responsavel_id");
     if (error) { btn.disabled = false; return toast(/plano_itens/.test(error.message) ? "Falta rodar o SQL do Plano de Ação no Supabase" : "Erro: " + error.message); }
