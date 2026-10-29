@@ -4880,7 +4880,8 @@ function abrirItemForm(it) {
 /* ---------- colar plano (importar texto) ---------- */
 function lerPlanoTexto(texto) {
   const pessoas = pessoasPlano();
-  const ignorar = l => /^plano de a[çc][aã]o/i.test(l) || /^quadrados para marcar/i.test(l) || /^\d{1,3}$/.test(l) || /^\d{2}\/\d{2}\/\d{4}$/.test(l);
+  const ignorar = l => /^plano de a[çc][aã]o/i.test(l) || /^quadrados? para marcar/i.test(l) || /^marque o quadrado/i.test(l)
+    || /^\d{1,3}(\s*\/\s*\d{1,3})?$/.test(l) || /^(p[áa]g(ina)?\.?\s*)?\d{1,3}\s*(de|\/)\s*\d{1,3}$/i.test(l) || /^\d{2}\/\d{2}\/\d{4}$/.test(l);
   const secoes = []; let atual = null;
   for (const bruto of texto.split(/\r?\n/)) {
     let l = bruto.trim();
@@ -4891,13 +4892,17 @@ function lerPlanoTexto(texto) {
     const ehTitulo = letras.length >= 3 && letras === letras.toUpperCase() && /[A-ZÀ-Þ]/.test(letras);
     if (ehTitulo) {
       const resp = pessoas.find(p => semAcento(l).split(/[^a-z]+/).includes(semAcento(p.nome.split(" ")[0])));
-      atual = { nome: l, responsavel_id: resp?.id || null, contrato_id: lerLinhaRapida(l).contrato_id || null, itens: [] };
+      atual = { nome: l, responsavel_id: resp?.id || null, contrato_id: lerLinhaRapida(l).contrato_id || null,
+        livre: !resp && /\b(livre|livres|quem pegar)\b/i.test(semAcento(l)), itens: [] };
       secoes.push(atual);
       continue;
     }
     if (!atual) { atual = { nome: "GERAL", responsavel_id: null, contrato_id: null, itens: [] }; secoes.push(atual); }
     const anterior = atual.itens[atual.itens.length - 1];
-    if (anterior && /^[a-zà-ÿ(]/.test(l) && !/[.!?:]$/.test(anterior.titulo)) anterior.titulo += " " + l;
+    // linha quebrada do PDF: junta com a anterior quando ela não terminou a frase
+    const continua = anterior && !/[.!?:;)]$/.test(anterior.titulo) &&
+      (/^[a-zà-ÿ(]/.test(l) || anterior.titulo.length >= 40 || /[,\-–]$/.test(anterior.titulo) || /\s(de|da|do|das|dos|e|com|para|a|o|ao|na|no|em)$/i.test(anterior.titulo));
+    if (continua) anterior.titulo += " " + l;
     else atual.itens.push({ titulo: l });
   }
   // em cada item: nome da pessoa no começo ("Ronaldo: …") ou no fim ("… — Ronaldo", "(Ronaldo)", "Resp.: Ronaldo") e "urgente"
@@ -4906,7 +4911,8 @@ function lerPlanoTexto(texto) {
     let t = it.titulo;
     if (/\burgente\b/i.test(semAcento(t))) { it.urgente = true; t = t.replace(/[\s,;(\[\-–—]*\burgente\b[)\]!.]*/i, " ").trim(); }
     let m = t.match(/^([A-Za-zÀ-ÿ]+(?:\s[A-Za-zÀ-ÿ]+)?)\s*[:\-–—]\s+(.+)$/);
-    if (m && acharPessoa(m[1])) { it.responsavel_id = acharPessoa(m[1]).id; t = m[2]; }
+    if (m && /^(livre|quem pegar|qualquer um)$/i.test(semAcento(m[1]))) { it.livre = true; t = m[2]; }
+    else if (m && acharPessoa(m[1])) { it.responsavel_id = acharPessoa(m[1]).id; t = m[2]; }
     else {
       m = t.match(/^(.+?)\s*(?:[\-–—]\s*|\(\s*|\bresp(?:ons[aá]vel)?\.?\s*:?\s*)([A-Za-zÀ-ÿ]+(?:\s[A-Za-zÀ-ÿ]+)?)\s*\)?[.!]?$/i);
       if (m && acharPessoa(m[2])) { it.responsavel_id = acharPessoa(m[2]).id; t = m[1]; }
@@ -4971,7 +4977,7 @@ function abrirImportarPlano() {
     document.getElementById("ip-ok").textContent = n ? `Importar ${n} item(ns)` : "Importar";
     document.getElementById("ip-previa").innerHTML = secoes.map(s => `
       <div class="pl-secao-cab">${escapeHtml(s.nome)} <span>${s.itens.length}${s.responsavel_id ? ` · ${escapeHtml(primeiroNome(s.responsavel_id))}` : ""}</span></div>
-      <ol>${s.itens.map(i => `<li>${i.urgente ? `<span class="pl-tag urg">URGENTE</span> ` : ""}${escapeHtml(i.titulo)}${i.responsavel_id && i.responsavel_id !== s.responsavel_id ? ` <span class="pl-pessoa" style="--c:${corPessoa(i.responsavel_id).cor}">${escapeHtml(primeiroNome(i.responsavel_id))}</span>` : ""}</li>`).join("")}</ol>`).join("");
+      <ol>${s.itens.map(i => `<li>${i.urgente ? `<span class="pl-tag urg">URGENTE</span> ` : ""}${i.livre || (s.livre && !i.responsavel_id) ? `<span class="pl-pessoa livre">LIVRE</span> ` : ""}${escapeHtml(i.titulo)}${i.responsavel_id && i.responsavel_id !== s.responsavel_id ? ` <span class="pl-pessoa" style="--c:${corPessoa(i.responsavel_id).cor}">${escapeHtml(primeiroNome(i.responsavel_id))}</span>` : ""}</li>`).join("")}</ol>`).join("");
   };
   tx.oninput = previa;
   document.getElementById("ip-arquivo").onchange = async e => {
@@ -4999,15 +5005,19 @@ function abrirImportarPlano() {
     const linhas = [];
     const agora = new Date().toISOString();
     secoes.forEach(s => s.itens.forEach(it => {
-      const resp = it.responsavel_id || s.responsavel_id || padrao;
+      const livreAqui = it.livre || (s.livre && !it.responsavel_id);
+      const resp = it.responsavel_id || s.responsavel_id || (livreAqui ? null : padrao);
       const k = resp || "sem";
       if (proxima[k] == null) proxima[k] = proximaOrdem(resp, false);
-      linhas.push({ titulo: it.titulo, secao: s.nome, responsavel_id: resp, aberta: !resp && livreImport, urgente: !!it.urgente,
-        contrato_id: s.contrato_id || null, atribuido_em: resp ? agora : null,
+      linhas.push({ titulo: it.titulo, secao: s.nome, responsavel_id: resp, aberta: !resp && (livreAqui || livreImport), urgente: !!it.urgente,
+        contrato_id: s.contrato_id || null, atribuido_em: agora,
         data_prevista: data, ordem: proxima[k]++, criado_por: currentUser.id });
     }));
     const { data: criados, error } = await supabase.from("plano_itens").insert(linhas).select("id, responsavel_id");
-    if (error) { btn.disabled = false; return toast(/plano_itens/.test(error.message) ? "Falta rodar o SQL do Plano de Ação no Supabase" : "Erro: " + error.message); }
+    if (error) {
+      btn.disabled = false; btn.textContent = `Importar ${linhas.length} item(ns)`;
+      return toast(/plano_itens/.test(error.message) ? "Falta rodar o SQL do Plano de Ação no Supabase" : "Não importou: " + error.message);
+    }
     await supabase.from("plano_historico").insert((criados || []).map(c => ({ item_id: c.id, usuario_id: currentUser.id, acao: "criou", detalhes: { importado: true } })));
     const porPessoa = {};
     (criados || []).forEach(c => { if (c.responsavel_id) porPessoa[c.responsavel_id] = (porPessoa[c.responsavel_id] || 0) + 1; });
